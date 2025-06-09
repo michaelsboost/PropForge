@@ -1,0 +1,347 @@
+<div id="phase-complete-banner" class="hidden fixed top-6 left-1/2 transform -translate-x-1/2 bg-green-900 text-white px-6 py-3 rounded-xl shadow-xl z-50 transition-all duration-500">
+  ✅ Phase Complete! New challenge phase unlocked.
+</div>
+
+<div class="min-h-screen max-w-7xl mx-auto p-4 flex flex-col gap-6">
+  <!-- Header with Challenge Progress -->
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+    <div>
+      <h1 class="text-3xl font-bold flex items-center gap-2">
+        📈 <span class="gradient-text">Prop Firm Simulator</span>
+      </h1>
+      <p class="text-sm text-slate-400 mt-1">Trade your way to a funded account</p>
+    </div>
+    
+    <div class="flex items-center gap-4">
+      <!-- Challenge Badge -->
+      <div class="flex items-center gap-3 px-4 py-2 rounded-full bg-slate-800 border border-slate-700">
+        <div class="text-right">
+          <div class="font-bold text-lg" id="account-tier">$25K Challenge</div>
+          <div class="text-xs text-slate-400" id="account-phase">Phase 1/2</div>
+        </div>
+        <div class="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center">
+          <span class="text-xs font-bold">1</span>
+        </div>
+      </div>
+      
+      <!-- Progress Bar -->
+      <div class="w-full max-w-xs mt-4">
+        <div class="text-sm text-slate-400 mb-1">Phase Progress</div>
+        <div class="progress-bar bg-slate-700 h-4 rounded-full overflow-hidden">
+          <div class="progress-fill bg-blue-500 h-full w-0 transition-all duration-500"></div>
+        </div>
+        <div class="progress-label text-xs mt-1 text-right text-slate-300">0%</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Challenge Requirements -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Current Challenge Card -->
+    <div class="trading-card rounded-xl p-5">
+      <h3 class="font-bold text-lg mb-4 flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+        </svg>
+        <span id="challenge-title">Current Challenge</span>
+      </h3>
+      <div class="space-y-3">
+        <div class="flex justify-between items-center">
+          <span class="text-sm text-slate-400">Profit Target:</span>
+          <span id="profit-target" class="font-mono font-medium">$1,250</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-sm text-slate-400">Max Lots Allowed:</span>
+          <span class="font-mono font-medium" id="max-lots">4</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-sm text-slate-400">Max Total Loss:</span>
+          <span id="total-loss" class="font-mono font-medium text-red-400">$1,500</span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Next Tier Card -->
+    <div class="trading-card rounded-xl p-5">
+      <h3 class="font-bold text-lg mb-4 flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-purple-400" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M5 5a3 3 0 015-2.236A3 3 0 0114.83 6H16a2 2 0 110 4h-5V9a1 1 0 10-2 0v1H4a2 2 0 110-4h1.17C5.06 5.687 5 5.35 5 5zm4 1V5a1 1 0 10-1 1h1zm3 0a1 1 0 10-1-1v1h1z" clip-rule="evenodd" />
+          <path d="M9 11H3v5a2 2 0 002 2h4v-7zM11 18h4a2 2 0 002-2v-5h-6v7z" />
+        </svg>
+        Next Tier
+      </h3>
+      <div class="space-y-3">
+        <div class="flex items-center gap-3">
+          <div class="flex-1">
+            <div class="text-sm mb-1">Complete 2x $25K Challenges</div>
+            <div class="w-full h-1.5 bg-slate-700 rounded-full overflow-hidden">
+              <div id="tier-progress" class="h-full bg-purple-500" style="width: 0%"></div>
+            </div>
+          </div>
+          <span id="tier-progress-text" class="text-xs font-mono">0/2</span>
+        </div>
+        <div class="text-sm text-slate-400" id="next-tier-hint">
+          Unlocks $50K Challenge with higher limits
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Trading Interface -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Chart Column -->
+    <div class="lg:col-span-2 trading-card rounded-xl p-5">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="font-bold text-lg">Price Chart</h2>
+        <div class="flex items-center gap-2">
+          <span class="inline-block mb-4 font-mono px-3 py-1 text-sm">C:<span id="current-profit">$0.00</span></span>
+          <span class="inline-block mb-4 font-mono px-3 py-1 text-sm">U:<span id="open-pnl">$0.00</span></span>
+        </div>
+      </div>
+      
+      <!-- Chart Canvas -->
+      <div class="relative">
+        <canvas id="chart" class="w-full h-[400px]"></canvas>
+        <div id="tradeMessage" class="text-sm text-red-400 mt-2 h-5"></div>
+      </div>
+      
+      <!-- Trading Controls -->
+      <div class="mt-6 grid grid-cols-3 gap-3">
+        <button id="buy" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2 border-0">
+          <span>BUY</span>
+          <span class="text-xs opacity-80">(B)</span>
+        </button>
+        <button id="sell" class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2 border-0">
+          <span>SELL</span>
+          <span class="text-xs opacity-80">(S)</span>
+        </button>
+        <button id="close" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2 border-0">
+          <span>Close All</span>
+          <span class="text-xs opacity-80">(X)</span>
+        </button>
+      </div>
+      
+      <!-- Contract Selection -->
+      <div class="mt-6 grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm text-slate-400 mb-1">Contract</label>
+          <div class="flex gap-2">
+            <!-- MNQ Button -->
+            <label class="flex-1">
+              <input type="radio" name="contract" value="micro" class="peer hidden" checked>
+              <div class="w-full h-full bg-slate-800 hover:bg-slate-700 border border-solid border-blue-500/30 
+                          py-2 rounded-lg text-center
+                          text-slate-300 peer-checked:text-blue-400">
+                MNQ
+              </div>
+            </label>
+
+            <!-- NQ Button -->
+            <label class="flex-1">
+              <input type="radio" name="contract" value="mini" class="peer hidden">
+              <div class="w-full h-full bg-slate-800 hover:bg-slate-700 border border-solid border-blue-500/30 
+                          py-2 rounded-lg text-center
+                          text-slate-300 peer-checked:text-blue-400">
+                NQ
+              </div>
+            </label>
+          </div>
+        </div>
+        
+        <div>
+          <nav>
+            <label class="block text-sm text-slate-400 mb-1">Position Size</label>
+            <span id="lotSizeDisplay" class="text-sm text-slate-400">1</span>
+          </nav>
+          <!-- Lot Size Selection -->
+          <div class="lot-option w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 flex gap-2 flex-wrap justify-center text-sm">
+            <label class="flex items-center gap-1">
+              <button id="lotDecrease" class="px-3 py-1 bg-gray-700 text-white rounded border-0">−</button>
+            </label>
+            <div class="flex flex-row items-center gap-1">
+              <label class="flex flex-col items-center gap-1">
+                <input type="radio" name="lot" value="1" checked class="form-radio"> 
+                <div>1</div>
+              </label>
+              <label class="flex flex-col items-center gap-1">
+                <input type="radio" name="lot" value="3" class="form-radio"> 
+                <div>3</div>
+              </label>
+              <label class="flex flex-col items-center gap-1">
+                <input type="radio" name="lot" value="5" class="form-radio"> 
+                <div>5</div>
+              </label>
+              <label class="flex flex-col items-center gap-1">
+                <input type="radio" name="lot" value="10" class="form-radio"> 
+                <div>10</div>
+              </label>
+              <label class="flex flex-col items-center gap-1">
+                <input type="radio" name="lot" value="15" class="form-radio"> <div>15</div>
+              </label>
+            </div>
+            <label class="flex items-center gap-1">
+              <button id="lotIncrease" class="px-3 py-1 bg-gray-700 text-white rounded border-0">+</button>
+            </label>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Risk Management -->
+      <div class="mt-6 grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm text-slate-400 mb-1">Stop Loss ($)</label>
+          <input id="stopLossAmount" type="number" value="50" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2">
+        </div>
+        <div>
+          <label class="block text-sm text-slate-400 mb-1">Take Profit ($)</label>
+          <input id="takeProfitAmount" type="number" value="100" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2">
+        </div>
+      </div>
+    </div>
+    
+    <!-- Right Column -->
+    <div class="space-y-6">
+      <!-- Account Summary -->
+      <div class="trading-card rounded-xl p-5">
+        <h2 class="font-bold text-lg mb-4">💰 Account Summary</h2>
+        <div class="space-y-4">
+          <div class="flex justify-between items-center">
+            <span class="text-slate-400">Balance:</span>
+            <span id="balance" class="font-mono font-bold text-xl">$25,000.00</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-slate-400">Margin Used:</span>
+            <span id="marginUsed" class="font-mono">$0.00</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-slate-400">Available Margin:</span>
+            <span id="availableMargin" class="font-mono text-green-400">$25,000.00</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Strategy Bots -->
+      <div class="trading-card rounded-xl p-5">
+        <h2 class="font-bold text-lg mb-4">🤖 Strategy Bots</h2>
+        <div class="space-y-3 max-h-[420px] overflow-y-auto pr-2">
+          <!-- ICT Ghost Bot -->
+          <div class="bot-card bot-ict bg-slate-800/50 p-3 rounded-lg cursor-pointer">
+            <div class="flex justify-between items-center">
+              <h3 class="font-bold flex items-center gap-2">
+                <span>👻</span>
+                <span>ICT Ghost</span>
+              </h3>
+              <div class="text-green-400 font-mono text-sm">+$0</div>
+            </div>
+            <div class="text-xs text-slate-400 mt-1">Smart Money Concepts with 1:2 RR</div>
+            <div class="grid grid-cols-3 gap-2 text-xs mt-3">
+              <div>
+                <div class="text-slate-500">Win Rate</div>
+                <div>75%</div>
+              </div>
+              <div>
+                <div class="text-slate-500">Avg Win</div>
+                <div>$42</div>
+              </div>
+              <div>
+                <div class="text-slate-500">ROI</div>
+                <div>18%</div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- FVG Sniper Bot -->
+          <div class="bot-card bot-fvg bg-slate-800/50 p-3 rounded-lg cursor-pointer">
+            <div class="flex justify-between items-center">
+              <h3 class="font-bold flex items-center gap-2">
+                <span>🌀</span>
+                <span>FVG Sniper</span>
+              </h3>
+              <div class="text-green-400 font-mono text-sm">+$0</div>
+            </div>
+            <div class="text-xs text-slate-400 mt-1">Fair Value Gap entries with 1:3 RR</div>
+            <div class="grid grid-cols-3 gap-2 text-xs mt-3">
+              <div>
+                <div class="text-slate-500">Win Rate</div>
+                <div>68%</div>
+              </div>
+              <div>
+                <div class="text-slate-500">Avg Win</div>
+                <div>$35</div>
+              </div>
+              <div>
+                <div class="text-slate-500">Trades/Day</div>
+                <div>2-3</div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Price Action Pro Bot -->
+          <div class="bot-card bot-pa bg-slate-800/50 p-3 rounded-lg cursor-pointer">
+            <div class="flex justify-between items-center">
+              <h3 class="font-bold flex items-center gap-2">
+                <span>📊</span>
+                <span>Price Action Pro</span>
+              </h3>
+              <div class="text-green-400 font-mono text-sm">+$0</div>
+            </div>
+            <div class="text-xs text-slate-400 mt-1">Candlestick pattern recognition</div>
+            <div class="grid grid-cols-3 gap-2 text-xs mt-3">
+              <div>
+                <div class="text-slate-500">Win Rate</div>
+                <div>62%</div>
+              </div>
+              <div>
+                <div class="text-slate-500">Avg Win</div>
+                <div>$28</div>
+              </div>
+              <div>
+                <div class="text-slate-500">Hold Time</div>
+                <div>15m</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Trade History -->
+  <div class="trading-card rounded-xl p-5 mt-6">
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="font-bold text-lg">📋 Trade History</h2>
+      <div class="flex gap-4">
+        <div class="text-sm">
+          <span class="text-slate-400">Total Trades:</span>
+          <span id="totalTrades" class="font-bold ml-2">0</span>
+        </div>
+        <div class="text-sm">
+          <span class="text-slate-400">Profitability:</span>
+          <span id="winlossratio" class="font-bold ml-2">0%</span>
+        </div>
+      </div>
+    </div>
+    
+    <div class="overflow-x-auto">
+      <table id="history" class="w-full text-sm">
+        <thead>
+          <tr class="text-left border-b border-slate-700">
+            <th class="pb-2 text-slate-400">Time</th>
+            <th class="pb-2 text-slate-400">Type</th>
+            <th class="pb-2 text-slate-400">Size</th>
+            <th class="pb-2 text-slate-400">Entry</th>
+            <th class="pb-2 text-slate-400">Exit</th>
+            <th class="pb-2 text-slate-400">P&L</th>
+            <th class="pb-2 text-slate-400">Duration</th>
+            <th class="pb-2 text-slate-400">Reason</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-700">
+          <tr>
+            <td colspan="8" class="py-8 text-center text-slate-500">No trades yet</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

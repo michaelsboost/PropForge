@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Generator: Gravit.io -->
+
+<svg
+   style="isolation:isolate"
+   viewBox="0 0 512 512"
+   width="512pt"
+   height="512pt"
+   version="1.1"
+   id="svg8"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs1">
+    <clipPath
+       id="_clipPath_vJ1oeLGn7nVVsU6BZzsvBr2quWgdLVfX">
+      <rect
+         width="512"
+         height="512"
+         id="rect1"
+         x="0"
+         y="0" />
+    </clipPath>
+  </defs>
+  <g
+     clip-path="url(#_clipPath_vJ1oeLGn7nVVsU6BZzsvBr2quWgdLVfX)"
+     id="g8">
+    <rect
+       width="512"
+       height="512"
+       style="fill:#212020"
+       id="rect2"
+       x="0"
+       y="0" />
+    <g
+       id="g7">
+      <g
+         id="g5">
+        <g
+           id="g4">
+          <rect
+             x="255.0175"
+             y="69"
+             width="11.894"
+             height="215.133"
+             fill="#ebebeb"
+             id="rect3"
+             style="stroke-width:1.41421" />
+          <rect
+             x="234.487"
+             y="120.301"
+             width="52.956001"
+             height="112.531"
+             fill="#ebebeb"
+             id="rect4" />
+        </g>
+        <path
+           d="m 198.08,349.22 c 14.7,4.648 24.775,12.615 23.168,32.55 q -2.49,30.881 -43.39,39.717 V 443 h 41.889 c 16.29,-19.524 69.814,-21.076 85.328,0 h 39.562 V 421.487 C 267.841,400.98 295.767,320.306 399.973,318.754 V 297.372 H 198.08 Z m -6.62,-1.828 c -28.335,-6.907 -68.155,-7.221 -79.433,-50.02 h 79.433 z"
+           fill-rule="evenodd"
+           fill="#ebebeb"
+           id="path4" />
+      </g>
+      <g
+         id="g6">
+        <path
+           d="M 100.688,105.407 V 88.858 H 53.861 v 334.284 h 46.827 V 406.593 H 68.754 V 105.407 Z"
+           fill="#ebebeb"
+           id="path5" />
+        <path
+           d="M 411.312,105.407 V 88.858 h 46.827 v 334.284 h -46.827 v -16.549 h 31.934 V 105.407 Z"
+           fill="#ebebeb"
+           id="path6" />
+      </g>
+    </g>
+  </g>
+</svg>

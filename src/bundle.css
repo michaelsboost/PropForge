@@ -1,0 +1,87 @@
+@import '../libraries/pico.min.css';
+
+  
+@tailwind components;
+@tailwind utilities;
+/* Custom hybrid styles */ 
+:root {
+  --bg-dark: #14152f;
+  --bg-darker: #0e0f20;
+  --bg-panel: #1c1d38;
+  --green: #00c853;
+  --red: #ff3d00;
+  --yellow: #ffd600;
+  --blue: #2962ff;
+  --purple: #8b5cf6;
+}
+body {
+  background-color: #0f172a;
+  color: white;
+  font-family: 'Inter', sans-serif;
+}
+.trading-card {
+  background: #1e293b;
+  border-radius: 12px;
+  border: 1px solid #334155;
+}
+.challenge-badge {
+  background: linear-gradient(135deg, var(--bg-panel) 0%, var(--bg-darker) 100%);
+  border: 1px solid var(--purple);
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 0.85rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.phase-indicator {
+  position: relative;
+  height: 8px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.phase-progress {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, var(--blue), var(--purple));
+  width: 0%;
+  transition: width 0.3s ease;
+}
+.bot-card {
+  transition: all 0.2s;
+  background: linear-gradient(135deg, var(--bg-panel) 0%, var(--bg-darker) 100%);
+  border-left: 4px solid;
+}
+.bot-card:hover {
+  transform: translateY(-2px);
+  background: #2a374b !important;
+}
+.bot-ict { border-color: #ec4899; }
+.bot-martingale { border-color: #f59e0b; }
+.bot-ob { border-color: #10b981; }
+.bot-pa { border-color: #3b82f6; }
+.bot-fvg { border-color: #8b5cf6; }
+#chart {
+  height: 400px;
+  width: 100%;
+}
+/* Trade type indicators */
+.trade-type-buy {
+  color: var(--green);
+  background: rgba(0, 200, 83, 0.1);
+}
+.trade-type-sell {
+  color: var(--red);
+  background: rgba(255, 61, 0, 0.1);
+}
+
+.lot-option label {
+  width: 2rem;
+}
+.lot-option input[type="radio"] {
+  margin-inline-end: 0 !important;
+  margin-top: 0;
+}

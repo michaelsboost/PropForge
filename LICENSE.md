@@ -1,5 +1,4 @@
-MIT License
-
+The MIT License (MIT)
 Copyright (c) 2025 Michael Schwartz
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
