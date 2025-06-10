@@ -129,7 +129,6 @@ const Core = (() => {
     todayPNL: 0,
     justAdvanced: false,
     isFullyTrained: false,
-    uiNeedsUpdate: true,
     challenge: {
       phase: 1,
       level: '25K',
