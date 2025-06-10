@@ -3,6 +3,7 @@
   
 @tailwind components;
 @tailwind utilities;
+
 /* Custom hybrid styles */ 
 :root {
   --bg-dark: #14152f;

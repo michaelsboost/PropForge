@@ -1,3 +1,5 @@
+@import '../libraries/pico.min.css';
+
 /* Custom hybrid styles */ 
 :root {
   --bg-dark: #14152f;

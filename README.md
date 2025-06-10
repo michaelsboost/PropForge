@@ -55,16 +55,10 @@ Error handling to ensure the app never freezes after all phases are complete
     /*
     === TODOS ===
 
-    1. 📈 Zoom Logic:
-      - Allow user to zoom out far enough to see SL/TP even if off-screen
-
-    2. 📱 Mobile Interactions:
-      - Make SL & TP draggable on mobile
-
-    3. 🤖 Bot Strategy Visualizer:
+    1. 🤖 Bot Strategy Visualizer:
       - Show how strategies (ICT, FVG, Price Action, etc.) would behave on the current chart
 
-    4. 🧩 Drawing Tools:
+    2. 🧩 Drawing Tools:
       - Support for trendlines, support/resistance, channels, and custom drawings (like TradingView)
     */
 

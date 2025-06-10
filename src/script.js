@@ -1,18 +1,11 @@
 /*
 === TODOS ===
 
-1. 📉 Zoom Logic:
-   - Allow user to zoom out far enough to always see Stop Loss (SL) and Take Profit (TP) lines,
-     even if they're above or below the current visible chart range.
-
-2. 📱 Mobile Interactions:
-   - Enable SL & TP dragging functionality on mobile (touch support for both ends of the trade).
-
-3. 🤖 Bot Strategy Visualization:
+1. 🤖 Bot Strategy Visualization:
    - Implement visualization of how bots (ICT, FVG, Price Action, etc.) are currently trading
      the chart using their actual strategy logic — ideally show trades in real time or ghost lines.
 
-4. ✏️ Chart Drawing Tools:
+2. ✏️ Chart Drawing Tools:
    - Add drawing tools:
      - Trendlines
      - Support/Resistance Zones
@@ -367,7 +360,6 @@ const Chart = (() => {
   let selectedLine = null;
   let dragOffset = 0;
 
-  // Zoom
   canvas.addEventListener("wheel", (e) => {
     e.preventDefault();
     const delta = e.deltaY > 0 ? 0.9 : 1.1;
@@ -375,39 +367,41 @@ const Chart = (() => {
     scaleX = Math.max(0.5, Math.min(scaleX, 10));
   });
 
-  // Drag
   function getXYFromEvent(e) {
     const rect = canvas.getBoundingClientRect();
-    if (e.touches) {
-      return {
-        x: e.touches[0].clientX - rect.left,
-        y: e.touches[0].clientY - rect.top
-      };
-    }
-    return {
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top
-    };
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    return { x: clientX - rect.left, y: clientY - rect.top };
   }
-  
+
   function handleDown(e) {
     const { x, y } = getXYFromEvent(e);
     selectedLine = null;
-  
+
     const state = Core.state;
     const height = canvas.height;
     const padding = 10;
     const viewCount = Math.floor(60 / scaleX);
     const start = Math.max(0, state.candles.length - viewCount - Math.floor(offsetX));
     const candles = state.candles.slice(start, start + viewCount);
-    const max = Math.max(...candles.map(c => c.high));
-    const min = Math.min(...candles.map(c => c.low));
+    let max = Math.max(...candles.map(c => c.high));
+    let min = Math.min(...candles.map(c => c.low));
+    const priceBuffer = (max - min) * 0.05;
+    max += priceBuffer;
+    min -= priceBuffer;
+
+    state.openTrades.forEach(trade => {
+      max = Math.max(max, trade.entry, trade.stop, trade.target);
+      min = Math.min(min, trade.entry, trade.stop, trade.target);
+    });
+
     const scaleY = (height - 2 * padding) / (max - min);
-  
+
     state.openTrades.forEach(trade => {
       const test = (price, key) => {
         const py = height - (price - min) * scaleY - padding;
-        if (Math.abs(py - y) < 6) {
+        const tolerance = e.touches ? 10 : 6;
+        if (Math.abs(py - y) < tolerance) {
           selectedLine = { trade, key };
           dragOffset = py - y;
         }
@@ -415,36 +409,47 @@ const Chart = (() => {
       test(trade.stop, 'stop');
       test(trade.target, 'target');
     });
-  
+
     if (!selectedLine) {
       isDragging = true;
       lastX = e.touches ? e.touches[0].clientX : e.clientX;
     }
   }
-  
+
   function handleUpLeave() {
     isDragging = false;
     selectedLine = null;
   }
-  
+
   function handleMove(e) {
     if (!canvas) return;
+
     const state = Core.state;
     const rect = canvas.getBoundingClientRect();
     const clientX = e.touches ? e.touches[0].clientX : e.clientX;
     const clientY = e.touches ? e.touches[0].clientY : e.clientY;
     const y = clientY - rect.top;
-  
+
     const height = canvas.height;
     const padding = 10;
     const viewCount = Math.floor(60 / scaleX);
     const start = Math.max(0, state.candles.length - viewCount - Math.floor(offsetX));
     const candles = state.candles.slice(start, start + viewCount);
-    const max = Math.max(...candles.map(c => c.high));
-    const min = Math.min(...candles.map(c => c.low));
+    let max = Math.max(...candles.map(c => c.high));
+    let min = Math.min(...candles.map(c => c.low));
+    const priceBuffer = (max - min) * 0.05;
+    max += priceBuffer;
+    min -= priceBuffer;
+
+    state.openTrades.forEach(trade => {
+      max = Math.max(max, trade.entry, trade.stop, trade.target);
+      min = Math.min(min, trade.entry, trade.stop, trade.target);
+    });
+
     const scaleY = (height - 2 * padding) / (max - min);
-  
+
     if (selectedLine) {
+      e.preventDefault();
       const newPrice = ((height - (y + dragOffset) - padding) / scaleY) + min;
       selectedLine.trade[selectedLine.key] = parseFloat(newPrice.toFixed(2));
     } else if (isDragging) {
@@ -454,17 +459,15 @@ const Chart = (() => {
       lastX = clientX;
     }
   }
-  
+
   canvas.addEventListener("mousedown", handleDown);
   canvas.addEventListener("touchstart", handleDown);
-  
   canvas.addEventListener("mousemove", handleMove);
   canvas.addEventListener("touchmove", handleMove, { passive: false });
-  
   canvas.addEventListener("mouseup", handleUpLeave);
   canvas.addEventListener("touchend", handleUpLeave);
-  
   canvas.addEventListener("mouseleave", handleUpLeave);
+  canvas.addEventListener("touchcancel", handleUpLeave); // 🔵 Support touchcancel
 
   function draw(state) {
     if (!canvas || !ctx) return;
@@ -483,12 +486,21 @@ const Chart = (() => {
     const candles = state.candles.slice(start, start + viewCount);
     if (candles.length < 2) return;
 
-    const max = Math.max(...candles.map(c => c.high));
-    const min = Math.min(...candles.map(c => c.low));
+    let max = Math.max(...candles.map(c => c.high));
+    let min = Math.min(...candles.map(c => c.low));
+    const priceBuffer = (max - min) * 0.05;
+    max += priceBuffer;
+    min -= priceBuffer;
+
+    state.openTrades.forEach(trade => {
+      max = Math.max(max, trade.entry, trade.stop, trade.target);
+      min = Math.min(min, trade.entry, trade.stop, trade.target);
+    });
+
     const scaleY = (height - 2 * padding) / (max - min);
     const candleWidth = (width - labelMargin) / candles.length;
 
-    // === Grid + Right-Aligned Labels ===
+    // Grid
     ctx.strokeStyle = "#333";
     ctx.fillStyle = "#888";
     ctx.font = "10px sans-serif";
@@ -506,18 +518,17 @@ const Chart = (() => {
       ctx.fillText(price.toFixed(2), width - 4, y);
     }
 
-    // === Candlesticks ===
+    // Candles
     candles.forEach((c, i) => {
       const x = i * candleWidth;
-
       const openY = height - (c.open - min) * scaleY - padding;
       const closeY = height - (c.close - min) * scaleY - padding;
       const highY = height - (c.high - min) * scaleY - padding;
       const lowY = height - (c.low - min) * scaleY - padding;
 
       const isBullish = c.close >= c.open;
-      ctx.strokeStyle = isBullish ? "#0f0" : "#f00";
-      ctx.fillStyle = isBullish ? "#0f0" : "#f00";
+      ctx.strokeStyle = isBullish ? "#089a81" : "#f33645";
+      ctx.fillStyle = isBullish ? "#089a81" : "#f33645";
 
       ctx.beginPath();
       ctx.moveTo(x + candleWidth / 2, highY);
@@ -529,12 +540,15 @@ const Chart = (() => {
       ctx.fillRect(x + 1, bodyTop, candleWidth - 2, bodyHeight);
     });
 
-    // === Trade Lines with P&L ===
+    // Trade Lines
     state.openTrades.forEach(trade => {
-      const drawLine = (price, color, label, trade) => {
+      const drawLine = (price, color, label, key) => {
         const y = height - (price - min) * scaleY - padding;
 
-        ctx.strokeStyle = color;
+        ctx.strokeStyle = (selectedLine && selectedLine.trade === trade && selectedLine.key === key)
+          ? "#ff0" // Highlight if being dragged
+          : color;
+
         ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.moveTo(0, y);
@@ -550,18 +564,18 @@ const Chart = (() => {
           dollar = ` → ${sign}$${pnl.toFixed(2)}`;
         }
 
-        ctx.fillStyle = color;
+        ctx.fillStyle = ctx.strokeStyle;
         ctx.font = "11px sans-serif";
         ctx.textAlign = "left";
         ctx.fillText(`${label} ${price.toFixed(2)}${dollar}`, 8, y - 4);
       };
 
-      drawLine(trade.entry, trade.type === 'buy' ? '#0f0' : '#f00', 'Entry', trade);
-      drawLine(trade.stop, '#888', 'SL', trade);
-      drawLine(trade.target, '#888', 'TP', trade);
+      drawLine(trade.entry, trade.type === 'buy' ? '#0f0' : '#f00', 'Entry');
+      drawLine(trade.stop, '#888', 'SL', 'stop');
+      drawLine(trade.target, '#888', 'TP', 'target');
     });
 
-    // === Live Price Box (Right Side) ===
+    // Live Price Box
     const liveY = height - (state.currentPrice - min) * scaleY - padding;
     ctx.fillStyle = "#111";
     ctx.strokeStyle = "#0ff";
