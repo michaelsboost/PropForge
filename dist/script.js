@@ -1,14 +1,11 @@
 /*
 === TODOS ===
 
-1. 📱 Mobile Interactions:
-   - Enable SL & TP dragging functionality on mobile (touch support for both ends of the trade).
-
-2. 🤖 Bot Strategy Visualization:
+1. 🤖 Bot Strategy Visualization:
    - Implement visualization of how bots (ICT, FVG, Price Action, etc.) are currently trading
      the chart using their actual strategy logic — ideally show trades in real time or ghost lines.
 
-3. ✏️ Chart Drawing Tools:
+2. ✏️ Chart Drawing Tools:
    - Add drawing tools:
      - Trendlines
      - Support/Resistance Zones
