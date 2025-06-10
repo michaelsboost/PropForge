@@ -19,7 +19,7 @@ const Phases = {
     name: "25K Challenge - Phase 1",
     target: 1250,
     maxLoss: 1500,
-    maxLots: 4,
+    maxLots: 2,
     startBalance: 25000,
     next: "25k_phase2"
   },
@@ -27,7 +27,7 @@ const Phases = {
     name: "25K Challenge - Phase 2 (Sim Funded)",
     target: 1250,
     maxLoss: 1500,
-    maxLots: 4,
+    maxLots: 2,
     startBalance: 25000,
     next: "50k_phase1"
   },
@@ -35,7 +35,7 @@ const Phases = {
     name: "50K Challenge - Phase 1",
     target: 2500,
     maxLoss: 3000,
-    maxLots: 6,
+    maxLots: 5,
     startBalance: 50000,
     next: "50k_phase2"
   },
@@ -43,7 +43,7 @@ const Phases = {
     name: "50K Challenge - Phase 2 (Sim Funded)",
     target: 2500,
     maxLoss: 3000,
-    maxLots: 6,
+    maxLots: 5,
     startBalance: 50000,
     next: "100k_phase1"
   },
@@ -289,6 +289,14 @@ const Core = (() => {
     }
   }
 
+  function getMaxLotsAllowed() {
+    const config = Phases[state.phase];
+    if (!config) return Infinity; // Free mode
+    return state.contract === 'micro'
+      ? config.maxLots * 10  // 10 micros = 1 mini
+      : config.maxLots;
+  }
+
   function simulateTick() {
     const { challenge } = state;
   
@@ -345,7 +353,7 @@ const Core = (() => {
 
   setInterval(simulateTick, 100);
 
-  return { state, resetPhase, advancePhase };
+  return { state, resetPhase, advancePhase, getMaxLotsAllowed };
 })();
 
 // === CHART MODULE ===
@@ -451,12 +459,11 @@ const Chart = (() => {
     if (selectedLine) {
       e.preventDefault();
       const newPrice = ((height - (y + dragOffset) - padding) / scaleY) + min;
-      selectedLine.trade[selectedLine.key] = parseFloat(newPrice.toFixed(2));
-    } else if (isDragging) {
-      const dx = clientX - lastX;
-      offsetX += dx / 5;
-      offsetX = Math.max(0, Math.min(offsetX, 200));
-      lastX = clientX;
+      const rounded = parseFloat(newPrice.toFixed(2));
+      selectedLine.trade[selectedLine.key] = rounded;
+    
+      if (selectedLine.key === 'stop') selectedLine.trade.stopMoved = true;
+      if (selectedLine.key === 'target') selectedLine.trade.targetMoved = true;
     }
   }
 
@@ -557,11 +564,17 @@ const Chart = (() => {
 
         let dollar = '';
         if (label === 'SL' || label === 'TP') {
-          const delta = price - trade.entry;
-          const isProfit = label === 'TP' ? 1 : -1;
-          const pnl = delta * trade.contractValue * trade.qty * isProfit;
+          const direction = trade.type === 'buy' ? 1 : -1;
+          const delta = (price - trade.entry) * direction;
+        
+          // Round to nearest tick
+          const tickSize = 0.25;
+          const roundedTicks = Math.round(delta / tickSize);
+          const tickValue = state.contract === 'micro' ? 0.50 : 5.00;
+          const pnl = roundedTicks * tickValue * trade.qty;
+        
           const sign = pnl >= 0 ? '+' : '';
-          dollar = ` → ${sign}$${pnl.toFixed(2)}`;
+          dollar = ` → ${sign}$${pnl.toFixed(2)} (${roundedTicks} ticks)`;
         }
 
         ctx.fillStyle = ctx.strokeStyle;
@@ -642,12 +655,13 @@ const Trades = (() => {
     if (!config && Core.state.isFullyTrained) {
       return placeFreeModeTrade(type, state, lot, entry);
     }
-    
-    if (totalLots > config.maxLots) {
-      showTradeMessage(`❌ Max lot size exceeded: Limit is ${config.maxLots}, Attempted ${totalLots}`);
+
+    const maxLotsAllowed = Core.getMaxLotsAllowed();
+    if (totalLots > maxLotsAllowed) {
+      showTradeMessage(`❌ Max lot size exceeded: Limit is ${maxLotsAllowed}, Attempted ${totalLots}`);
       return;
     }
-
+    
     // 🧠 Explanation:
     // If MNQ moves from 14,000.00 to 14,001.00, you earn/lose $2 per contract.
     // If NQ moves from 14,000.00 to 14,001.00, you earn/lose $20 per contract.
@@ -724,18 +738,25 @@ const Trades = (() => {
         showTradeMessage(`❌ Not enough margin to scale in: Need $${additionalMargin}, Have $${availableMargin}`);
         return;
       }
-
+    
       const totalQty = sameSide.qty + lot;
       sameSide.entry = ((sameSide.entry * sameSide.qty) + (entry * lot)) / totalQty;
       sameSide.qty = totalQty;
-      sameSide.stop = type === 'buy'
-        ? sameSide.entry - state.stopLoss
-        : sameSide.entry + state.stopLoss;
-      sameSide.target = type === 'buy'
-        ? sameSide.entry + state.takeProfit
-        : sameSide.entry - state.takeProfit;
       sameSide.marginRequired += additionalMargin;
       state.marginUsed += additionalMargin;
+    
+      // ✅ Only auto-adjust SL/TP if user hasn't manually moved them
+      if (!sameSide.stopMoved) {
+        sameSide.stop = type === 'buy'
+          ? sameSide.entry - state.stopLoss
+          : sameSide.entry + state.stopLoss;
+      }
+      if (!sameSide.targetMoved) {
+        sameSide.target = type === 'buy'
+          ? sameSide.entry + state.takeProfit
+          : sameSide.entry - state.takeProfit;
+      }
+    
       return;
     }
 
@@ -860,11 +881,15 @@ const Stats = (() => {
       const phase = Phases[Core.state.phase];
       updateIfChanged("profit-target", `$${ch.profitTarget.toLocaleString()}`);
       updateIfChanged("total-loss", `$${ch.maxTotalLoss.toLocaleString()}`);
-      updateIfChanged("max-lots", `${phase.maxLots}`);
+      const maxLots = Core.getMaxLotsAllowed();
+      updateIfChanged("max-lots", `${maxLots}`);
     }
 
     updateTierUI();
 
+    const totalOpenLots = state.openTrades.reduce((sum, t) => sum + t.qty, 0);
+    updateIfChanged("totalOpenLots", totalOpenLots.toString());
+    
     updateIfChanged("current-profit", `$${profit.toLocaleString(undefined, {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
