@@ -129,6 +129,7 @@ const Core = (() => {
     todayPNL: 0,
     justAdvanced: false,
     isFullyTrained: false,
+    uiNeedsUpdate: true,
     challenge: {
       phase: 1,
       level: '25K',
@@ -797,34 +798,43 @@ const Trades = (() => {
 
 // === STATS + UI MODULE ===
 const Stats = (() => {
+  let lastTradeCount = 0;
+
+  function updateIfChanged(id, newValue) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (el.textContent !== newValue) {
+      el.textContent = newValue;
+    }
+  }
+
   function updateTierUI() {
     const ch = Core.state.challenge;
     const tiers = ["25K", "50K", "100K", "150K", "300K", "500K", "1M"];
     const index = tiers.indexOf(ch.level);
     const next = tiers[index + 1];
-  
-    // Progress bar
+
     const tierProgress = ((index + 1) / tiers.length) * 100;
     document.getElementById("tier-progress").style.width = `${tierProgress}%`;
-    document.getElementById("tier-progress-text").textContent = `${index + 1}/${tiers.length}`;
-  
-    // Hint
+    updateIfChanged("tier-progress-text", `${index + 1}/${tiers.length}`);
+
     const hint = next
       ? `Unlocks $${next} Challenge with higher limits`
       : `All challenges completed`;
-    document.getElementById("next-tier-hint").textContent = hint;
-  
-    // Optional: update the description text
+    updateIfChanged("next-tier-hint", hint);
+
     const desc = next
       ? `Complete ${tiers.filter(t => t === ch.level).length}x $${ch.level} Challenges`
       : `All challenges completed`;
-    document.querySelector(".trading-card .text-sm.mb-1").textContent = desc;
+    const descEl = document.querySelector(".trading-card .text-sm.mb-1");
+    if (descEl && descEl.textContent !== desc) {
+      descEl.textContent = desc;
+    }
   }
-  
+
   function update(state) {
     const ch = state.challenge;
 
-    // === 1. Profit + Progress ===
     const profit = state.balance - ch.startingBalance;
     const phaseProgress = Math.min(100, (profit / ch.profitTarget) * 100);
 
@@ -832,41 +842,34 @@ const Stats = (() => {
     const index = tiers.indexOf(ch.level);
     const tierProgress = (index / tiers.length) * 100;
 
-    // === 2. Update Progress Bars ===
     document.querySelector(".progress-fill").style.width = `${phaseProgress}%`;
-    document.querySelector(".progress-label").textContent = `${phaseProgress.toFixed(1)}%`;
-
-    document.getElementById("tier-progress").style.width = `${tierProgress}%`;
-    document.getElementById("tier-progress-text").textContent = `${index + 1}/${tiers.length}`;
-
-    // === 3. Challenge Overview UI ===
-    document.getElementById("account-tier").textContent = `$${ch.level} Challenge`;
-    document.getElementById("account-phase").textContent = `Phase ${ch.phase}/2`;
+    updateIfChanged("tier-progress", `${tierProgress}%`);
+    updateIfChanged("tier-progress-text", `${index + 1}/${tiers.length}`);
+    updateIfChanged("account-tier", `$${ch.level} Challenge`);
+    updateIfChanged("account-phase", `Phase ${ch.phase}/2`);
     document.querySelector(".bg-purple-600 span").textContent = ch.phase;
 
-    document.getElementById("challenge-title").textContent = Core.state.isFullyTrained
-  ? "🎉 Free Mode (No Restrictions)"
-  : "Current Challenge";
-    
+    updateIfChanged("challenge-title", Core.state.isFullyTrained
+      ? "🎉 Free Mode (No Restrictions)"
+      : "Current Challenge");
+
     if (Core.state.isFullyTrained) {
-      document.getElementById("profit-target").textContent = `🎯 Training complete`;
-      document.getElementById("total-loss").textContent = `∞`;
-      document.getElementById("max-lots").textContent = `∞`;
+      updateIfChanged("profit-target", `🎯 Training complete`);
+      updateIfChanged("total-loss", `∞`);
+      updateIfChanged("max-lots", `∞`);
     } else {
-      const ch = Core.state.challenge;
       const phase = Phases[Core.state.phase];
-      document.getElementById("profit-target").textContent = `$${ch.profitTarget.toLocaleString()}`;
-      document.getElementById("total-loss").textContent = `$${ch.maxTotalLoss.toLocaleString()}`;
-      document.getElementById("max-lots").textContent = phase.maxLots;
+      updateIfChanged("profit-target", `$${ch.profitTarget.toLocaleString()}`);
+      updateIfChanged("total-loss", `$${ch.maxTotalLoss.toLocaleString()}`);
+      updateIfChanged("max-lots", `${phase.maxLots}`);
     }
-    
+
     updateTierUI();
 
-    // === 4. Account Stats ===
-    document.getElementById("current-profit").textContent = `$${profit.toLocaleString(undefined, {
+    updateIfChanged("current-profit", `$${profit.toLocaleString(undefined, {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
-    })}`;
+    })}`);
 
     const openPNL = state.openTrades.reduce((acc, trade) => {
       const delta = trade.type === 'buy'
@@ -875,50 +878,52 @@ const Stats = (() => {
       return acc + (delta * trade.qty * trade.contractValue);
     }, 0);
 
-    document.getElementById("open-pnl").textContent = `$${openPNL.toLocaleString(undefined, {
+    updateIfChanged("open-pnl", `$${openPNL.toLocaleString(undefined, {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
-    })}`;
+    })}`);
 
-    document.getElementById("balance").textContent = `$${state.balance.toLocaleString(undefined, {
+    updateIfChanged("balance", `$${state.balance.toLocaleString(undefined, {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
-    })}`;
+    })}`);
 
-    document.getElementById("lotSizeDisplay").textContent = Core.state.lotSize;
+    updateIfChanged("lotSizeDisplay", Core.state.lotSize.toString());
 
-    document.getElementById("marginUsed").textContent = `$${state.marginUsed.toLocaleString(undefined, {
+    updateIfChanged("marginUsed", `$${state.marginUsed.toLocaleString(undefined, {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
-    })}`;
+    })}`);
 
-    document.getElementById("availableMargin").textContent = `$${(state.balance - state.marginUsed).toLocaleString(undefined, {
+    updateIfChanged("availableMargin", `$${(state.balance - state.marginUsed).toLocaleString(undefined, {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
-    })}`;
+    })}`);
 
-    // === 5. Win Rate & Trade Stats ===
     const wins = state.trades.filter(t => t.pnl > 0);
     const total = state.trades.length;
     const winRate = total ? ((wins.length / total) * 100).toFixed(1) + '%' : '0%';
 
-    document.getElementById("totalTrades").textContent = total;
-    document.getElementById("winlossratio").textContent = winRate;
+    updateIfChanged("totalTrades", total.toString());
+    updateIfChanged("winlossratio", winRate);
 
-    // === 6. Trade History Table ===
-    const historyEl = document.getElementById("history").querySelector("tbody");
-    historyEl.innerHTML = state.trades.map(t => `
-      <tr>
-        <td>${t.time}</td>
-        <td>${t.type}</td>
-        <td>${t.qty}</td>
-        <td>${t.entry.toFixed(2)}</td>
-        <td>${t.exit.toFixed(2)}</td>
-        <td style="color:${t.pnl >= 0 ? 'limegreen' : 'red'}">${t.pnl.toFixed(2)}</td>
-        <td>${(t.duration / 1000).toFixed(1)}s</td>
-        <td>${t.exitReason || 'Manual'}</td>
-      </tr>
-    `).reverse().join("");
+    // Only update trade history table if trade count changed
+    if (total !== lastTradeCount) {
+      lastTradeCount = total;
+      const historyEl = document.getElementById("history").querySelector("tbody");
+      historyEl.innerHTML = state.trades.map(t => `
+        <tr>
+          <td>${t.time}</td>
+          <td>${t.type}</td>
+          <td>${t.qty}</td>
+          <td>${t.entry.toFixed(2)}</td>
+          <td>${t.exit.toFixed(2)}</td>
+          <td style="color:${t.pnl >= 0 ? 'limegreen' : 'red'}">${t.pnl.toFixed(2)}</td>
+          <td>${(t.duration / 1000).toFixed(1)}s</td>
+          <td>${t.exitReason || 'Manual'}</td>
+        </tr>
+      `).reverse().join("");
+    }
   }
 
   return { update };
