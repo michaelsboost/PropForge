@@ -51,16 +51,16 @@ Error handling to ensure the app never freezes after all phases are complete
 - Auto-update of **phase progress**, **tier progress**, and **trading stats**
 
 ## 🗂️ Planned Features (TODO)  
+Coming soon to PropForge:
 
-    /*
-    === TODOS ===
+* **📐 Drawing Tools** – Trendlines, support/resistance zones, channels, and freehand drawing (like TradingView)
+* **📊 Indicators** – Swing highs/lows, auto S/R, and lightweight moving averages (for bots and user reference)
+* **🤖 Strategy Bots** – Visual trading bots that simulate real methods:
+  - ICT Ghost, FVG Sniper, Price Action Pro
+  - Trend Trader, S/R Hunter, Breakout Bot, Structure Bot, Scalper
+* **🏆 Leaderboard** – Compare your stats to each bot: ROI, win rate, drawdown, and more
 
-    1. 🤖 Bot Strategy Visualizer:
-      - Show how strategies (ICT, FVG, Price Action, etc.) would behave on the current chart
-
-    2. 🧩 Drawing Tools:
-      - Support for trendlines, support/resistance, channels, and custom drawings (like TradingView)
-    */
+(No replay system — built to run fast and store data locally)
 
 ## ⚡ **Getting Started**
 ### **1️⃣ Install & Run Locally**

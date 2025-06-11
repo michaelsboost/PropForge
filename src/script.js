@@ -1,16 +1,45 @@
 /*
 === TODOS ===
 
-1. 🤖 Bot Strategy Visualization:
-   - Implement visualization of how bots (ICT, FVG, Price Action, etc.) are currently trading
-     the chart using their actual strategy logic — ideally show trades in real time or ghost lines.
+1. ✏️ Drawing Tools & Chart Markups (Manual User Tools First)
+   - [ ] Trendlines (snap to candles, draggable)
+   - [ ] Support/Resistance Zones (horizontal lines or boxes)
+   - [ ] Channels (parallel lines, optionally snapped)
+   - [ ] Freehand Tool (optional - only if lightweight)
+   - [ ] Erase / Select / Modify drawings
+   - [ ] Store drawings in localStorage (small, efficient format)
+   - [ ] Ensure drawings persist across sessions & chart loads
 
-2. ✏️ Chart Drawing Tools:
-   - Add drawing tools:
-     - Trendlines
-     - Support/Resistance Zones
-     - Channels
-     - Free-hand/manual drawing (lines should lock to candles and scroll with the chart like TradingView)
+2. 🧠 Chart Indicator Engine (Lightweight but Bot-Compatible)
+   - [ ] Swing High/Low detection
+   - [ ] Auto Support/Resistance from structure
+   - [ ] Basic Trendline detection (for bot use only)
+   - [ ] Optional: Moving Averages, ATR, or VWAP (if needed for bot logic)
+
+3. 🤖 Strategy Bot Framework
+   - [ ] Base bot engine to run logic on OHLC stream
+   - [ ] Visualize trades with ghost entries/exits, lines/arrows
+   - [ ] Bots:
+       - ICT Ghost (S/R + FVG + SMT logic)
+       - FVG Sniper (Fair Value Gap entries, 1:3 RR)
+       - Price Action Pro (Candlestick patterns, S/R, trendlines)
+       - Trend Trader (MA crossovers or swing alignment)
+       - S/R Hunter (zones + price reaction)
+       - Breakout Bot (range + volume or structure breaks)
+       - Structure Bot (HH/HL or LH/LL recognition)
+       - Scalper (fast entries/exits on short timeframe logic)
+   - [ ] Update bot stats live (PnL, win rate, trades)
+   - [ ] Save bot stats in localStorage
+
+4. 🏆 Leaderboard UI
+   - [ ] Display user vs. bots:
+       - Win rate
+       - Avg win/loss
+       - ROI
+       - Max drawdown
+   - [ ] Optional: filter by bot type or session
+
+// 🚫 Replay system intentionally excluded due to localStorage space limits.
 */
 
 // === PHASE CONFIGURATION ===
@@ -192,22 +221,22 @@ const Core = (() => {
     state.todayPNL = 0;
   }
 
-  function showPhaseCompleteBanner(challenge) {
-    // ✅ Prevent override if user has fully completed all training
+  function showPhaseCompleteNotification(challenge) {
     if (Core.state.isFullyTrained) return;
-      
-    const banner = document.getElementById("phase-complete-banner");
-    if (!banner) return;
   
-    banner.textContent = `✅ ${challenge.level} Phase ${challenge.phase} Complete!`;
-  
-    banner.classList.remove("hidden", "opacity-0");
-    banner.classList.add("opacity-100");
-  
-    setTimeout(() => {
-      banner.classList.add("opacity-0");
-      setTimeout(() => banner.classList.add("hidden"), 500);
-    }, 3000);
+    const title = `${challenge.level} Phase ${challenge.phase} Complete!`;
+    const body = "You've successfully advanced to the next challenge phase.";
+    
+    // Request permission if not already granted
+    if (Notification.permission === "granted") {
+      new Notification(title, { body });
+    } else if (Notification.permission !== "denied") {
+      Notification.requestPermission().then(permission => {
+        if (permission === "granted") {
+          new Notification(title, { body });
+        }
+      });
+    }
   }
 
   function advancePhase() {
@@ -220,19 +249,23 @@ const Core = (() => {
     // ✅ Exit if there's no next phase
     if (!nextPhaseKey) {
       if (!Core.state.isFullyTrained) {
-        const banner = document.getElementById("phase-complete-banner");
-        if (banner) {
-          banner.textContent = "🎯 Training complete! You're now ready to take on a real prop firm challenge.";
-          banner.classList.remove("hidden", "opacity-0");
-          banner.classList.add("opacity-100");
+        Core.state.isFullyTrained = true;
   
-          setTimeout(() => {
-            banner.classList.add("opacity-0");
-            setTimeout(() => banner.classList.add("hidden"), 500);
-          }, 4000);
+        // ✅ Trigger final training complete notification
+        const title = "🎉 Training Complete!";
+        const body = "You're now free to trade without limits.";
   
-          Core.state.isFullyTrained = true; // ✅ Flag prevents banner spam
+        if (Notification.permission === "granted") {
+          new Notification(title, { body });
+        } else if (Notification.permission !== "denied") {
+          Notification.requestPermission().then(permission => {
+            if (permission === "granted") {
+              new Notification(title, { body });
+            }
+          });
         }
+  
+        Stats.update(Core.state); // ✅ Ensure UI reflects free mode
       }
   
       Core.state.justAdvanced = false;
@@ -284,7 +317,7 @@ const Core = (() => {
     // ✅ Profit Target Met
     if (totalProfit >= config.target) {
       Core.state.justAdvanced = true;
-      showPhaseCompleteBanner(Core.state.challenge);
+      showPhaseCompleteNotification(Core.state.challenge);
       advancePhase();
     }
   }
@@ -354,6 +387,79 @@ const Core = (() => {
   setInterval(simulateTick, 100);
 
   return { state, resetPhase, advancePhase, getMaxLotsAllowed };
+})();
+
+// === MODAL MODULE ===
+const Modal = (() => {
+  function render({
+    large,
+    title = "Are you sure you want to proceed?",
+    content,
+    CloseLabel,
+    ConfirmLabel,
+    onLoad,
+    onClose,
+    onConfirm
+  }) {
+    const hClass = "text-lg font-thin m-0";
+    const buttonClass = "text-xs w-auto px-3 py-2 m-0 capitalize rounded-md";
+    const svgClass = "w-3";
+    const times = `<svg class="${svgClass}" viewBox="0 0 384 512">
+        <path fill="currentColor" d="M342.6 150.6c12.5-12.5 12.5-32.8 
+        0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5
+        -45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 
+        32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 
+        12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z"/>
+      </svg>`;
+
+    const html = `<article class="${large ? 'flex flex-col h-3/4' : ''} rounded-md">
+      <header class="${large ? 'flex-none' : ''} flex justify-between items-center">
+        <h1 class="${hClass}">${title}</h1>
+        <button class="${buttonClass} bg-transparent border-0" style="color: unset;" aria-label="Close">${times}</button>
+      </header>
+      <main class="font-thin ${large ? 'flex-grow' : ''}">
+        ${content || ''}
+      </main>
+      <footer ${large ? 'class="flex-none"' : ''}>
+        <button class="${buttonClass} bg-transparent border border-gray-600" aria-label="Close">${CloseLabel || 'close'}</button>
+        ${onConfirm ? `<button class="${buttonClass}" aria-label="Confirm">${ConfirmLabel || 'confirm'}</button>` : ''}
+      </footer>
+    </article>`;
+
+    const modal = document.createElement('dialog');
+    modal.open = true;
+    modal.innerHTML = html;
+    document.body.appendChild(modal);
+
+    if (onLoad && typeof onLoad === 'function') onLoad();
+
+    const timesBtn = modal.querySelector('header button');
+    const closeBtn = modal.querySelector('footer button:first-child');
+    const confirmBtn = modal.querySelector('footer button:last-child');
+
+    const closeModal = () => {
+      document.body.removeChild(modal);
+    };
+
+    timesBtn.onclick = () => {
+      if (onClose) onClose();
+      closeModal();
+    };
+
+    closeBtn.onclick = () => {
+      if (onClose) onClose();
+      closeModal();
+    };
+
+    if (onConfirm && confirmBtn) {
+      confirmBtn.onclick = () => {
+        onConfirm();
+        closeModal();
+      };
+    }
+  }
+
+  return { render };
 })();
 
 // === CHART MODULE ===
@@ -474,7 +580,7 @@ const Chart = (() => {
   canvas.addEventListener("mouseup", handleUpLeave);
   canvas.addEventListener("touchend", handleUpLeave);
   canvas.addEventListener("mouseleave", handleUpLeave);
-  canvas.addEventListener("touchcancel", handleUpLeave); // 🔵 Support touchcancel
+  canvas.addEventListener("touchcancel", handleUpLeave);
 
   function draw(state) {
     if (!canvas || !ctx) return;
@@ -623,6 +729,12 @@ const Trades = (() => {
     const margin = state.contract === 'micro' ? 500 : 10000;
     const requiredMargin = lot * margin;
     const availableMargin = state.balance - state.marginUsed;
+
+    // Show margin they earned it
+    document.querySelectorAll('[data-find=margin]').forEach(e => {
+      if (!e.classList.contains('hidden')) return;
+      e.classList.remove('hidden');
+    });
   
     if (requiredMargin > availableMargin) {
       showTradeMessage(`❌ Not enough margin: Need $${requiredMargin}, Have $${availableMargin}`);
@@ -649,16 +761,27 @@ const Trades = (() => {
     const entry = state.currentPrice;
     const lot = state.lotSize;
     const config = Phases[state.phase] || null;
-    const totalLots = state.openTrades.reduce((sum, t) => sum + t.qty, 0) + lot;
+    
+    // Convert both open trades and current lot into mini-equivalent lots
+    const currentLotMiniEquiv = (state.contract === 'micro') ? lot / 10 : lot;
+    const openMiniLots = state.openTrades.reduce((sum, t) => {
+      const lotEquiv = (t.contractValue === 2.0) ? t.qty / 10 : t.qty;
+      return sum + lotEquiv;
+    }, 0);
+    
+    const totalMiniLots = currentLotMiniEquiv + openMiniLots;
     
     // === ⛑️ If fully trained, allow unlimited lots ===
-    if (!config && Core.state.isFullyTrained) {
+    const isFreeMode = Core.state.isFullyTrained && !config;
+    
+    if (isFreeMode) {
       return placeFreeModeTrade(type, state, lot, entry);
     }
-
+    
+    // Always enforce lot limits before any trade:
     const maxLotsAllowed = Core.getMaxLotsAllowed();
-    if (totalLots > maxLotsAllowed) {
-      showTradeMessage(`❌ Max lot size exceeded: Limit is ${maxLotsAllowed}, Attempted ${totalLots}`);
+    if (totalMiniLots > maxLotsAllowed) {
+      showTradeMessage(`❌ Max lot size exceeded: Limit is ${maxLotsAllowed}, Attempted ${totalMiniLots.toFixed(2)}`);
       return;
     }
     
@@ -851,23 +974,31 @@ const Stats = (() => {
       descEl.textContent = desc;
     }
   }
-
+  
   function update(state) {
     const ch = state.challenge;
+    const trades = state.trades;
+    const wins = trades.filter(t => t.pnl > 0);
+    const losses = trades.filter(t => t.pnl < 0);
+    const totalPnl = trades.reduce((sum, t) => sum + t.pnl, 0);
+    const winRate = trades.length ? ((wins.length / trades.length) * 100).toFixed(1) + '%' : '0%';
+    const avgWin = wins.length ? wins.reduce((a, b) => a + b.pnl, 0) / wins.length : 0;
+    const avgLoss = losses.length ? losses.reduce((a, b) => a + b.pnl, 0) / losses.length : 0;
+    const avgWinDuration = wins.length ? wins.reduce((a, b) => a + b.duration, 0) / wins.length : 0;
+    const avgLossDuration = losses.length ? losses.reduce((a, b) => a + b.duration, 0) / losses.length : 0;
 
+    // === Challenge + UI ===
     const profit = state.balance - ch.startingBalance;
     const phaseProgress = Math.min(100, (profit / ch.profitTarget) * 100);
-
     const tiers = ["25K", "50K", "100K", "150K", "300K", "500K", "1M"];
     const index = tiers.indexOf(ch.level);
     const tierProgress = (index / tiers.length) * 100;
 
     document.querySelector(".progress-fill").style.width = `${phaseProgress}%`;
-    updateIfChanged("tier-progress", `${tierProgress}%`);
     updateIfChanged("tier-progress-text", `${index + 1}/${tiers.length}`);
     updateIfChanged("account-tier", `$${ch.level} Challenge`);
     updateIfChanged("account-phase", `Phase ${ch.phase}/2`);
-    document.querySelector(".bg-purple-600 span").textContent = ch.phase;
+    document.querySelector(".progress-label").textContent = `${phaseProgress.toFixed(0)}%`;
 
     updateIfChanged("challenge-title", Core.state.isFullyTrained
       ? "🎉 Free Mode (No Restrictions)"
@@ -877,6 +1008,8 @@ const Stats = (() => {
       updateIfChanged("profit-target", `🎯 Training complete`);
       updateIfChanged("total-loss", `∞`);
       updateIfChanged("max-lots", `∞`);
+      document.querySelector(".progress-fill").style.background = 'gold';
+      document.getElementById("tier-progress").style.background = 'gold';
     } else {
       const phase = Phases[Core.state.phase];
       updateIfChanged("profit-target", `$${ch.profitTarget.toLocaleString()}`);
@@ -885,11 +1018,9 @@ const Stats = (() => {
       updateIfChanged("max-lots", `${maxLots}`);
     }
 
-    updateTierUI();
-
     const totalOpenLots = state.openTrades.reduce((sum, t) => sum + t.qty, 0);
     updateIfChanged("totalOpenLots", totalOpenLots.toString());
-    
+
     updateIfChanged("current-profit", `$${profit.toLocaleString(undefined, {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
@@ -924,18 +1055,14 @@ const Stats = (() => {
       maximumFractionDigits: 2
     })}`);
 
-    const wins = state.trades.filter(t => t.pnl > 0);
-    const total = state.trades.length;
-    const winRate = total ? ((wins.length / total) * 100).toFixed(1) + '%' : '0%';
-
-    updateIfChanged("totalTrades", total.toString());
+    updateIfChanged("totalTrades", trades.length.toString());
     updateIfChanged("winlossratio", winRate);
 
-    // Only update trade history table if trade count changed
-    if (total !== lastTradeCount) {
-      lastTradeCount = total;
+    // === Trade History Table ===
+    if (trades.length !== lastTradeCount) {
+      lastTradeCount = trades.length;
       const historyEl = document.getElementById("history").querySelector("tbody");
-      historyEl.innerHTML = state.trades.map(t => `
+      historyEl.innerHTML = trades.map(t => `
         <tr>
           <td>${t.time}</td>
           <td>${t.type}</td>
@@ -983,7 +1110,17 @@ function adjustLotSize(delta) {
 // === INPUT EVENT HANDLERS ===
 document.querySelectorAll('input[name="contract"]').forEach(radio => {
   radio.addEventListener('change', () => {
-    Core.state.contract = radio.value;
+    const newContract = radio.value;
+    
+    // Prevent contract change while trades are open
+    if (Core.state.openTrades.length > 0) {
+      radio.checked = false;
+      document.querySelector(`input[name="contract"][value="${Core.state.contract}"]`).checked = true;
+      alert("❌ Cannot change contract type while trades are open");
+      return;
+    }
+    
+    Core.state.contract = newContract;
   });
 });
 document.querySelectorAll('input[name="lot"]').forEach(radio => {
@@ -1080,6 +1217,125 @@ document.getElementById("close").addEventListener("click", () => {
 
   state.openTrades = [];
   Stats.update(state);
+});
+document.querySelectorAll('button[data-open="performance"]').forEach(btn => {
+  function formatMs(ms) {
+    const sec = ms / 1000;
+    if (sec < 30) return "< 30s";
+    if (sec < 60) return "30s - 1m";
+    if (sec < 180) return "1-3m";
+    if (sec < 600) return "3-10m";
+    return "> 10m";
+  }
+  
+  btn.onclick = function () {
+    const state = Core.state;
+    const ch = state.challenge;
+    const trades = state.trades;
+    const wins = trades.filter(t => t.pnl > 0);
+    const losses = trades.filter(t => t.pnl < 0);
+    const totalPnl = trades.reduce((sum, t) => sum + t.pnl, 0);
+    const winRate = trades.length ? ((wins.length / trades.length) * 100).toFixed(1) + '%' : '0%';
+    const avgWin = wins.length ? wins.reduce((a, b) => a + b.pnl, 0) / wins.length : 0;
+    const avgLoss = losses.length ? losses.reduce((a, b) => a + b.pnl, 0) / losses.length : 0;
+    const avgWinDuration = wins.length ? wins.reduce((a, b) => a + b.duration, 0) / wins.length : 0;
+    const avgLossDuration = losses.length ? losses.reduce((a, b) => a + b.duration, 0) / losses.length : 0;
+
+    const formatPnL = (n) => {
+      const sign = n >= 0 ? '+' : '-';
+      return `${sign}$${Math.abs(n).toFixed(2)}`;
+    };
+
+    const formatSeconds = (ms) => `${(ms / 1000).toFixed(1)}s`;
+
+    const bestTrade = trades.length ? trades.reduce((a, b) => b.pnl > a.pnl ? b : a) : null;
+    const worstTrade = trades.length > 1 ? trades.reduce((a, b) => b.pnl < a.pnl ? b : a) : null;
+
+    const durationCounts = {};
+    trades.forEach(t => {
+      const bucket = formatMs(t.duration);
+      durationCounts[bucket] = (durationCounts[bucket] || 0) + 1;
+    });
+    const buckets = Object.entries(durationCounts).sort((a, b) => b[1] - a[1]);
+    const bestBracket = buckets[0]?.[0] ?? '--';
+    const worstBracket = buckets[buckets.length - 1]?.[0] ?? '--';
+
+    const stats = [
+      {
+        label: "Total PnL",
+        value: `$${totalPnl.toFixed(2)}`,
+        class: totalPnl >= 0 ? "text-green-400" : "text-red-400"
+      },
+      {
+        label: "Total Trades",
+        value: trades.length
+      },
+      {
+        label: "Win Rate",
+        value: winRate
+      },
+      {
+        label: "Avg Win",
+        value: `$${avgWin.toFixed(2)}`
+      },
+      {
+        label: "Avg Loss",
+        value: `$${avgLoss.toFixed(2)}`
+      },
+      {
+        label: "Best Trade",
+        value: bestTrade ? formatPnL(bestTrade.pnl) : '--',
+        class: bestTrade ? (bestTrade.pnl >= 0 ? "text-green-400" : "text-red-400") : ""
+      },
+      {
+        label: "Worst Trade",
+        value: worstTrade ? formatPnL(worstTrade.pnl) : '--',
+        class: worstTrade ? (worstTrade.pnl >= 0 ? "text-green-400" : "text-red-400") : ""
+      },
+      {
+        label: "Avg Win Duration",
+        value: formatSeconds(avgWinDuration)
+      },
+      {
+        label: "Avg Loss Duration",
+        value: formatSeconds(avgLossDuration)
+      },
+      {
+        label: "Best Duration Bracket",
+        value: bestBracket
+      },
+      {
+        label: "Worst Duration Bracket",
+        value: worstBracket
+      },
+      {
+        label: "Challenge",
+        value: `${ch.level} Phase ${ch.phase}/2`
+      }
+    ];
+
+    const content = `
+      <div class="trading-card rounded-xl p-5">
+        <h2 class="font-bold text-lg mb-4">📈 Performance Card</h2>
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 text-sm text-slate-300">
+          ${stats.map(stat => `
+            <div>
+              <span class="text-slate-500 block">${stat.label}</span>
+              <span class="font-bold ${stat.class ?? ''}">${stat.value}</span>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+
+    Modal.render({
+      title: "📈 Performance Card",
+      content,
+      ConfirmLabel: "Reset",
+      CloseLabel: "Cancel",
+      onConfirm: () => Core.resetPhase()
+    });
+  };
 });
 
 window.addEventListener('DOMContentLoaded', () => {

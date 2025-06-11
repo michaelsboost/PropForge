@@ -41,50 +41,157 @@ Ideal for Topstep-style challenge prep, journaling mental reps, or simply sharpe
     <link rel="stylesheet" href="src/style.css">
   </head>
   <body>
-    <div id="phase-complete-banner" class="hidden fixed top-6 left-1/2 transform -translate-x-1/2 bg-green-900 text-white px-6 py-3 rounded-xl shadow-xl z-50 transition-all duration-500">
-      ✅ Phase Complete! New challenge phase unlocked.
-    </div>
-
     <div class="min-h-screen max-w-7xl mx-auto p-4 flex flex-col gap-6">
       <!-- Header with Challenge Progress -->
       <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-          <h1 class="text-3xl font-bold flex items-center gap-2">
-            📈 <span class="gradient-text">Prop Firm Simulator</span>
-          </h1>
-          <p class="text-sm text-slate-400 mt-1">Trade your way to a funded account</p>
+        <!-- Header & Settings Button for xs screens -->
+        <div class="flex justify-between items-start">
+          <a class="no-underline" href="https://github.com/michaelsboost/PropForge/" target="_blank">
+            <h1 class="text-3xl font-bold flex items-center gap-2">
+              
+              <svg 
+                class="h-14"
+                style="isolation:isolate"
+                viewBox="0 0 512 512"
+                xmlns="http://www.w3.org/2000/svg"
+                xmlns:svg="http://www.w3.org/2000/svg">
+                <g>
+                  <g>
+                    <g>
+                      <rect
+                        x="255.0175"
+                        y="69"
+                        width="11.894"
+                        height="215.133"
+                        fill="#ebebeb"
+                        id="rect3"
+                        style="stroke-width:1.41421" />
+                      <rect
+                        x="234.487"
+                        y="120.301"
+                        width="52.956001"
+                        height="112.531"
+                        fill="#ebebeb"
+                        id="rect4" />
+                    </g>
+                    <path
+                      d="m 198.08,349.22 c 14.7,4.648 24.775,12.615 23.168,32.55 q -2.49,30.881 -43.39,39.717 V 443 h 41.889 c 16.29,-19.524 69.814,-21.076 85.328,0 h 39.562 V 421.487 C 267.841,400.98 295.767,320.306 399.973,318.754 V 297.372 H 198.08 Z m -6.62,-1.828 c -28.335,-6.907 -68.155,-7.221 -79.433,-50.02 h 79.433 z"
+                      fill-rule="evenodd"
+                      fill="#ebebeb"
+                      id="path4" />
+                  </g>
+                  <g>
+                    <path
+                      d="M 100.688,105.407 V 88.858 H 53.861 v 334.284 h 46.827 V 406.593 H 68.754 V 105.407 Z"
+                      fill="#ebebeb"
+                      id="path5" />
+                    <path
+                      d="M 411.312,105.407 V 88.858 h 46.827 v 334.284 h -46.827 v -16.549 h 31.934 V 105.407 Z"
+                      fill="#ebebeb"
+                      id="path6" />
+                  </g>
+                </g>
+              </svg>
+              
+              <span class="gradient-text">PropForge</span>
+            </h1>
+            <p class="text-sm text-slate-400 mt-1">Trade your way to a funded account</p>
+          </a>
+
+          <!-- Performance button for small screens -->
+          <button data-open="performance" class="block md:hidden bg-transparent border-0 shadow-none">
+            <svg class="w-12 h-12 trading-card transition hover:border-white" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="3">
+              <!-- Line path -->
+              <path
+                id="chart-line"
+                d="M8 48 L20 32 L32 40 L44 20 L56 28"
+                stroke="currentColor"
+                stroke-linejoin="round"
+                fill="none"
+                stroke-dasharray="100"
+                stroke-dashoffset="100">
+                <animate attributeName="stroke-dashoffset" from="100" to="0" dur="1.4s" fill="freeze" />
+              </path>
+            
+              <!-- Circles on data points including the start -->
+              <circle cx="8" cy="48" r="2">
+                <animate attributeName="r" from="0" to="2" dur="0.5s" begin="0.2s" fill="freeze" />
+              </circle>
+              <circle cx="20" cy="32" r="2">
+                <animate attributeName="r" from="0" to="2" dur="0.5s" begin="0.5s" fill="freeze" />
+              </circle>
+              <circle cx="32" cy="40" r="2">
+                <animate attributeName="r" from="0" to="2" dur="0.5s" begin="0.8s" fill="freeze" />
+              </circle>
+              <circle cx="44" cy="20" r="2">
+                <animate attributeName="r" from="0" to="2" dur="0.5s" begin="1.1s" fill="freeze" />
+              </circle>
+              <circle cx="56" cy="28" r="2">
+                <animate attributeName="r" from="0" to="2" dur="0.5s" begin="1.4s" fill="freeze" />
+              </circle>
+            </svg>
+          </button>
         </div>
-        
-        <div class="flex items-center gap-4">
+
+        <!-- Progress & Performance Button for md+ screens -->
+        <div class="w-full md:w-auto flex items-center gap-4">
           <!-- Challenge Badge -->
-          <div class="flex items-center gap-3 px-4 py-2 rounded-full bg-slate-800 border border-slate-700">
-            <div class="text-right">
-              <div class="font-bold text-lg" id="account-tier">$25K Challenge</div>
-              <div class="text-xs text-slate-400" id="account-phase">Phase 1/2</div>
+          <div class="w-full m-auto flex items-center justify-center gap-3 px-4 py-2 rounded-full bg-slate-800 border border-slate-700">
+            <div class="w-full flex flex-col justify-between gap-1">
+              <div class="font-bold text-center" id="account-tier">$25K Challenge</div>
+              <div class="progress-bar bg-slate-700 h-4 rounded-full overflow-hidden">
+                <div class="progress-fill bg-blue-500 h-full w-0 transition-all duration-500"></div>
+              </div>
+              <div class="text-xs text-center text-slate-400" id="account-phase">Phase 1/2</div>
             </div>
-            <div class="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center">
-              <span class="text-xs font-bold">1</span>
+            <div class="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center p-2">
+              <span class="progress-label text-xs font-bold">0%</span>
             </div>
           </div>
-          
-          <!-- Progress Bar -->
-          <div class="w-full max-w-xs mt-4">
-            <div class="text-sm text-slate-400 mb-1">Phase Progress</div>
-            <div class="progress-bar bg-slate-700 h-4 rounded-full overflow-hidden">
-              <div class="progress-fill bg-blue-500 h-full w-0 transition-all duration-500"></div>
-            </div>
-            <div class="progress-label text-xs mt-1 text-right text-slate-300">0%</div>
-          </div>
+
+          <!-- Performance button for large screens -->
+          <button data-open="performance" class="hidden md:block bg-transparent border-0 shadow-none">
+            <svg class="w-12 h-12 trading-card transition hover:border-white" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="3">
+              <!-- Line path -->
+              <path
+                id="chart-line"
+                d="M8 48 L20 32 L32 40 L44 20 L56 28"
+                stroke="currentColor"
+                stroke-linejoin="round"
+                fill="none"
+                stroke-dasharray="100"
+                stroke-dashoffset="100">
+                <animate attributeName="stroke-dashoffset" from="100" to="0" dur="1.4s" fill="freeze" />
+              </path>
+            
+              <!-- Circles on data points including the start -->
+              <circle cx="8" cy="48" r="2">
+                <animate attributeName="r" from="0" to="2" dur="0.5s" begin="0.2s" fill="freeze" />
+              </circle>
+              <circle cx="20" cy="32" r="2">
+                <animate attributeName="r" from="0" to="2" dur="0.5s" begin="0.5s" fill="freeze" />
+              </circle>
+              <circle cx="32" cy="40" r="2">
+                <animate attributeName="r" from="0" to="2" dur="0.5s" begin="0.8s" fill="freeze" />
+              </circle>
+              <circle cx="44" cy="20" r="2">
+                <animate attributeName="r" from="0" to="2" dur="0.5s" begin="1.1s" fill="freeze" />
+              </circle>
+              <circle cx="56" cy="28" r="2">
+                <animate attributeName="r" from="0" to="2" dur="0.5s" begin="1.4s" fill="freeze" />
+              </circle>
+            </svg>
+          </button>
         </div>
       </div>
 
       <!-- Challenge Requirements -->
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Current Challenge Card -->
         <div class="trading-card rounded-xl p-5">
           <h3 class="font-bold text-lg mb-4 flex items-center gap-2">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
             </svg>
             <span id="challenge-title">Current Challenge</span>
           </h3>
@@ -108,8 +215,8 @@ Ideal for Topstep-style challenge prep, journaling mental reps, or simply sharpe
         <div class="trading-card rounded-xl p-5">
           <h3 class="font-bold text-lg mb-4 flex items-center gap-2">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-purple-400" viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd" d="M5 5a3 3 0 015-2.236A3 3 0 0114.83 6H16a2 2 0 110 4h-5V9a1 1 0 10-2 0v1H4a2 2 0 110-4h1.17C5.06 5.687 5 5.35 5 5zm4 1V5a1 1 0 10-1 1h1zm3 0a1 1 0 10-1-1v1h1z" clip-rule="evenodd"></path>
-              <path d="M9 11H3v5a2 2 0 002 2h4v-7zM11 18h4a2 2 0 002-2v-5h-6v7z"></path>
+              <path fill-rule="evenodd" d="M5 5a3 3 0 015-2.236A3 3 0 0114.83 6H16a2 2 0 110 4h-5V9a1 1 0 10-2 0v1H4a2 2 0 110-4h1.17C5.06 5.687 5 5.35 5 5zm4 1V5a1 1 0 10-1 1h1zm3 0a1 1 0 10-1-1v1h1z" clip-rule="evenodd" />
+              <path d="M9 11H3v5a2 2 0 002 2h4v-7zM11 18h4a2 2 0 002-2v-5h-6v7z" />
             </svg>
             Next Tier
           </h3>
@@ -128,12 +235,31 @@ Ideal for Topstep-style challenge prep, journaling mental reps, or simply sharpe
             </div>
           </div>
         </div>
+        
+        <!-- Account Summary -->
+        <div class="trading-card rounded-xl p-5">
+          <h2 class="font-bold text-lg mb-4">💰 Account Summary</h2>
+          <div class="space-y-4">
+            <div class="flex justify-between items-center">
+              <span class="text-slate-400">Balance:</span>
+              <span id="balance" class="font-mono font-bold text-xl">$25,000.00</span>
+            </div>
+            <div data-find="margin" class="hidden flex justify-between items-center">
+              <span class="text-slate-400">Margin Used:</span>
+              <span id="marginUsed" class="font-mono">$0.00</span>
+            </div>
+            <div data-find="margin" class="hidden flex justify-between items-center">
+              <span class="text-slate-400">Available Margin:</span>
+              <span id="availableMargin" class="font-mono text-green-400">$25,000.00</span>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- Main Trading Interface -->
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div class="grid grid-cols-1 gap-6">
         <!-- Chart Column -->
-        <div class="lg:col-span-2 trading-card rounded-xl p-5">
+        <div class="trading-card rounded-xl p-5">
           <div class="flex justify-between items-center mb-4">
             <h2 class="font-bold text-lg">Price Chart</h2>
             <div class="flex items-center gap-2">
@@ -172,7 +298,7 @@ Ideal for Topstep-style challenge prep, journaling mental reps, or simply sharpe
               <div class="flex gap-2">
                 <!-- MNQ Button -->
                 <label class="flex-1">
-                  <input type="radio" name="contract" value="micro" class="peer hidden" checked="">
+                  <input type="radio" name="contract" value="micro" class="peer hidden" checked>
                   <div class="w-full h-full bg-slate-800 hover:bg-slate-700 border border-solid border-blue-500/30 
                               py-2 rounded-lg text-center
                               text-slate-300 peer-checked:text-blue-400">
@@ -204,7 +330,7 @@ Ideal for Topstep-style challenge prep, journaling mental reps, or simply sharpe
                 </label>
                 <div class="flex flex-row items-center gap-1">
                   <label class="flex flex-col items-center gap-1">
-                    <input type="radio" name="lot" value="1" checked="" class="form-radio"> 
+                    <input type="radio" name="lot" value="1" checked class="form-radio"> 
                     <div>1</div>
                   </label>
                   <label class="flex flex-col items-center gap-1">
@@ -242,112 +368,6 @@ Ideal for Topstep-style challenge prep, journaling mental reps, or simply sharpe
             </div>
           </div>
         </div>
-        
-        <!-- Right Column -->
-        <div class="space-y-6">
-          <!-- Account Summary -->
-          <div class="trading-card rounded-xl p-5">
-            <h2 class="font-bold text-lg mb-4">💰 Account Summary</h2>
-            <div class="space-y-4">
-              <div class="flex justify-between items-center">
-                <span class="text-slate-400">Balance:</span>
-                <span id="balance" class="font-mono font-bold text-xl">$25,000.00</span>
-              </div>
-              <div class="flex justify-between items-center">
-                <span class="text-slate-400">Margin Used:</span>
-                <span id="marginUsed" class="font-mono">$0.00</span>
-              </div>
-              <div class="flex justify-between items-center">
-                <span class="text-slate-400">Available Margin:</span>
-                <span id="availableMargin" class="font-mono text-green-400">$25,000.00</span>
-              </div>
-            </div>
-          </div>
-          
-          <!-- Strategy Bots -->
-          <div class="trading-card rounded-xl p-5">
-            <h2 class="font-bold text-lg mb-4">🤖 Strategy Bots</h2>
-            <div class="space-y-3 max-h-[420px] overflow-y-auto pr-2">
-              <!-- ICT Ghost Bot -->
-              <div class="bot-card bot-ict bg-slate-800/50 p-3 rounded-lg cursor-pointer">
-                <div class="flex justify-between items-center">
-                  <h3 class="font-bold flex items-center gap-2">
-                    <span>👻</span>
-                    <span>ICT Ghost</span>
-                  </h3>
-                  <div class="text-green-400 font-mono text-sm">+$0</div>
-                </div>
-                <div class="text-xs text-slate-400 mt-1">Smart Money Concepts with 1:2 RR</div>
-                <div class="grid grid-cols-3 gap-2 text-xs mt-3">
-                  <div>
-                    <div class="text-slate-500">Win Rate</div>
-                    <div>75%</div>
-                  </div>
-                  <div>
-                    <div class="text-slate-500">Avg Win</div>
-                    <div>$42</div>
-                  </div>
-                  <div>
-                    <div class="text-slate-500">ROI</div>
-                    <div>18%</div>
-                  </div>
-                </div>
-              </div>
-              
-              <!-- FVG Sniper Bot -->
-              <div class="bot-card bot-fvg bg-slate-800/50 p-3 rounded-lg cursor-pointer">
-                <div class="flex justify-between items-center">
-                  <h3 class="font-bold flex items-center gap-2">
-                    <span>🌀</span>
-                    <span>FVG Sniper</span>
-                  </h3>
-                  <div class="text-green-400 font-mono text-sm">+$0</div>
-                </div>
-                <div class="text-xs text-slate-400 mt-1">Fair Value Gap entries with 1:3 RR</div>
-                <div class="grid grid-cols-3 gap-2 text-xs mt-3">
-                  <div>
-                    <div class="text-slate-500">Win Rate</div>
-                    <div>68%</div>
-                  </div>
-                  <div>
-                    <div class="text-slate-500">Avg Win</div>
-                    <div>$35</div>
-                  </div>
-                  <div>
-                    <div class="text-slate-500">Trades/Day</div>
-                    <div>2-3</div>
-                  </div>
-                </div>
-              </div>
-              
-              <!-- Price Action Pro Bot -->
-              <div class="bot-card bot-pa bg-slate-800/50 p-3 rounded-lg cursor-pointer">
-                <div class="flex justify-between items-center">
-                  <h3 class="font-bold flex items-center gap-2">
-                    <span>📊</span>
-                    <span>Price Action Pro</span>
-                  </h3>
-                  <div class="text-green-400 font-mono text-sm">+$0</div>
-                </div>
-                <div class="text-xs text-slate-400 mt-1">Candlestick pattern recognition</div>
-                <div class="grid grid-cols-3 gap-2 text-xs mt-3">
-                  <div>
-                    <div class="text-slate-500">Win Rate</div>
-                    <div>62%</div>
-                  </div>
-                  <div>
-                    <div class="text-slate-500">Avg Win</div>
-                    <div>$28</div>
-                  </div>
-                  <div>
-                    <div class="text-slate-500">Hold Time</div>
-                    <div>15m</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
       
       <!-- Trade History -->
@@ -375,7 +395,7 @@ Ideal for Topstep-style challenge prep, journaling mental reps, or simply sharpe
                 <th class="pb-2 text-slate-400">Size</th>
                 <th class="pb-2 text-slate-400">Entry</th>
                 <th class="pb-2 text-slate-400">Exit</th>
-                <th class="pb-2 text-slate-400">P&amp;L</th>
+                <th class="pb-2 text-slate-400">P&L</th>
                 <th class="pb-2 text-slate-400">Duration</th>
                 <th class="pb-2 text-slate-400">Reason</th>
               </tr>
