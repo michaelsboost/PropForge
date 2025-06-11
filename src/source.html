@@ -1,4 +1,4 @@
-<div class="min-h-screen max-w-7xl mx-auto p-4 flex flex-col gap-6">
+<div class="container p-4 flex flex-col gap-6">
   <!-- Header with Challenge Progress -->
   <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
     <!-- Header & Settings Button for xs screens -->
@@ -143,7 +143,7 @@
   </div>
 
   <!-- Challenge Requirements -->
-  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
     <!-- Current Challenge Card -->
     <div class="trading-card rounded-xl p-5">
       <h3 class="font-bold text-lg mb-4 flex items-center gap-2">
@@ -192,12 +192,31 @@
         </div>
       </div>
     </div>
+    
+    <!-- Account Summary -->
+    <div class="trading-card rounded-xl p-5">
+      <h2 class="font-bold text-lg mb-4">💰 Account Summary</h2>
+      <div class="space-y-4">
+        <div class="flex justify-between items-center">
+          <span class="text-slate-400">Balance:</span>
+          <span id="balance" class="font-mono font-bold text-xl">$25,000.00</span>
+        </div>
+        <div data-find="margin" class="hidden flex justify-between items-center">
+          <span class="text-slate-400">Margin Used:</span>
+          <span id="marginUsed" class="font-mono">$0.00</span>
+        </div>
+        <div data-find="margin" class="hidden flex justify-between items-center">
+          <span class="text-slate-400">Available Margin:</span>
+          <span id="availableMargin" class="font-mono text-green-400">$25,000.00</span>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Main Trading Interface -->
-  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <div class="grid grid-cols-1 gap-6">
     <!-- Chart Column -->
-    <div class="lg:col-span-2 trading-card rounded-xl p-5">
+    <div class="trading-card rounded-xl p-5">
       <div class="flex justify-between items-center mb-4">
         <h2 class="font-bold text-lg">Price Chart</h2>
         <div class="flex items-center gap-2">
@@ -303,112 +322,6 @@
         <div>
           <label class="block text-sm text-slate-400 mb-1">Take Profit ($)</label>
           <input id="takeProfitAmount" type="number" value="100" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2">
-        </div>
-      </div>
-    </div>
-    
-    <!-- Right Column -->
-    <div class="space-y-6">
-      <!-- Account Summary -->
-      <div class="trading-card rounded-xl p-5">
-        <h2 class="font-bold text-lg mb-4">💰 Account Summary</h2>
-        <div class="space-y-4">
-          <div class="flex justify-between items-center">
-            <span class="text-slate-400">Balance:</span>
-            <span id="balance" class="font-mono font-bold text-xl">$25,000.00</span>
-          </div>
-          <div data-find="margin" class="hidden flex justify-between items-center">
-            <span class="text-slate-400">Margin Used:</span>
-            <span id="marginUsed" class="font-mono">$0.00</span>
-          </div>
-          <div data-find="margin" class="hidden flex justify-between items-center">
-            <span class="text-slate-400">Available Margin:</span>
-            <span id="availableMargin" class="font-mono text-green-400">$25,000.00</span>
-          </div>
-        </div>
-      </div>
-      
-      <!-- Strategy Bots -->
-      <div class="trading-card rounded-xl p-5">
-        <h2 class="font-bold text-lg mb-4">🤖 Strategy Bots</h2>
-        <div class="space-y-3 max-h-[420px] overflow-y-auto pr-2">
-          <!-- ICT Ghost Bot -->
-          <div class="bot-card bot-ict bg-slate-800/50 p-3 rounded-lg cursor-pointer">
-            <div class="flex justify-between items-center">
-              <h3 class="font-bold flex items-center gap-2">
-                <span>👻</span>
-                <span>ICT Ghost</span>
-              </h3>
-              <div class="text-green-400 font-mono text-sm">+$0</div>
-            </div>
-            <div class="text-xs text-slate-400 mt-1">Smart Money Concepts with 1:2 RR</div>
-            <div class="grid grid-cols-3 gap-2 text-xs mt-3">
-              <div>
-                <div class="text-slate-500">Win Rate</div>
-                <div>75%</div>
-              </div>
-              <div>
-                <div class="text-slate-500">Avg Win</div>
-                <div>$42</div>
-              </div>
-              <div>
-                <div class="text-slate-500">ROI</div>
-                <div>18%</div>
-              </div>
-            </div>
-          </div>
-          
-          <!-- FVG Sniper Bot -->
-          <div class="bot-card bot-fvg bg-slate-800/50 p-3 rounded-lg cursor-pointer">
-            <div class="flex justify-between items-center">
-              <h3 class="font-bold flex items-center gap-2">
-                <span>🌀</span>
-                <span>FVG Sniper</span>
-              </h3>
-              <div class="text-green-400 font-mono text-sm">+$0</div>
-            </div>
-            <div class="text-xs text-slate-400 mt-1">Fair Value Gap entries with 1:3 RR</div>
-            <div class="grid grid-cols-3 gap-2 text-xs mt-3">
-              <div>
-                <div class="text-slate-500">Win Rate</div>
-                <div>68%</div>
-              </div>
-              <div>
-                <div class="text-slate-500">Avg Win</div>
-                <div>$35</div>
-              </div>
-              <div>
-                <div class="text-slate-500">Trades/Day</div>
-                <div>2-3</div>
-              </div>
-            </div>
-          </div>
-          
-          <!-- Price Action Pro Bot -->
-          <div class="bot-card bot-pa bg-slate-800/50 p-3 rounded-lg cursor-pointer">
-            <div class="flex justify-between items-center">
-              <h3 class="font-bold flex items-center gap-2">
-                <span>📊</span>
-                <span>Price Action Pro</span>
-              </h3>
-              <div class="text-green-400 font-mono text-sm">+$0</div>
-            </div>
-            <div class="text-xs text-slate-400 mt-1">Candlestick pattern recognition</div>
-            <div class="grid grid-cols-3 gap-2 text-xs mt-3">
-              <div>
-                <div class="text-slate-500">Win Rate</div>
-                <div>62%</div>
-              </div>
-              <div>
-                <div class="text-slate-500">Avg Win</div>
-                <div>$28</div>
-              </div>
-              <div>
-                <div class="text-slate-500">Hold Time</div>
-                <div>15m</div>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>

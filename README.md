@@ -11,10 +11,6 @@ It features **phase-based evaluations**, **profit/loss tracking**, **challenge r
 > **🛠️ Built Using [kodeWeave](https://michaelsboost.github.io/kodeWeave/)**  
 > Lightweight, fast, and designed for accessibility across devices. No build step required.
 
-## 🚨 Project Status
-> **Actively in development — NOT a PWA yet**  
-> Initial version is web-based only. PWA support and full feature set are coming in future updates.
-
 ## 🚀 Launch the App
 🌍 Try it live: [PropForge Simulator](https://michaelsboost.github.io/PropForge/)
 

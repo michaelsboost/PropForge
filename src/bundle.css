@@ -51,20 +51,6 @@ body {
   width: 0%;
   transition: width 0.3s ease;
 }
-.bot-card {
-  transition: all 0.2s;
-  background: linear-gradient(135deg, var(--bg-panel) 0%, var(--bg-darker) 100%);
-  border-left: 4px solid;
-}
-.bot-card:hover {
-  transform: translateY(-2px);
-  background: #2a374b !important;
-}
-.bot-ict { border-color: #ec4899; }
-.bot-martingale { border-color: #f59e0b; }
-.bot-ob { border-color: #10b981; }
-.bot-pa { border-color: #3b82f6; }
-.bot-fvg { border-color: #8b5cf6; }
 #chart {
   height: 400px;
   width: 100%;

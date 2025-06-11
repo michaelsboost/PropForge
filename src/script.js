@@ -185,12 +185,52 @@ const Core = (() => {
       return candles;
     })(),
   };
+  
+  function clearStorage() {
+    // Clear local storage
+    localStorage.removeItem('PropForge');
+  
+    // Clear session storage specific to PropForge (if you use a specific key)
+    sessionStorage.removeItem('PropForge');
+  
+    // Clear cookies specific to PropForge
+    document.cookie.split(";").forEach(function(c) {
+      if (c.trim().startsWith('PropForge')) {
+        document.cookie = c.trim().split("=")[0] + 
+                          '=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/';
+      }
+    });
+  
+    // Clear service worker caches specific to PropForge
+    if ('caches' in window) {
+      caches.keys().then(function(names) {
+        names.forEach(function(name) {
+          if (name === 'PropForge-cache') {
+            caches.delete(name);
+          }
+        });
+      });
+    }
+  
+    // Unregister service workers specific to PropForge
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(function(registrations) {
+        registrations.forEach(function(registration) {
+          if (registration.scope.includes('PropForge')) {
+            registration.unregister();
+          }
+        });
+      });
+    }
+  }
 
-  function resetChallenge() {
+  function resetChallenge(string) {
     const currentPhase = Core.state.phase;
     const config = Phases[currentPhase];
-  
-    alert("🚨 Max total loss exceeded. Resetting the challenge...");
+
+    if (string) {
+      alert("🚨 Max total loss exceeded. Resetting the challenge...");
+    }
   
     Core.state.balance = config.startBalance;
     Core.state.marginUsed = 0;
@@ -210,6 +250,8 @@ const Core = (() => {
   
     Stats.update(Core.state);
     Chart.draw(Core.state);
+
+    clearStorage();
   }
 
   function resetPhase() {
@@ -219,6 +261,7 @@ const Core = (() => {
     state.trades = [];
     state.openTrades = [];
     state.todayPNL = 0;
+    clearStorage();
   }
 
   function showPhaseCompleteNotification(challenge) {
@@ -929,6 +972,7 @@ const Trades = (() => {
 
         state.marginUsed -= trade.marginRequired;
         state.balance += pnl;
+        saveStateToLocalStorage();
         return false;
       }
 
@@ -1080,6 +1124,34 @@ const Stats = (() => {
   return { update };
 })();
 
+// Save/Load trade History
+function saveStateToLocalStorage() {
+  const stateCopy = { ...Core.state };
+
+  // Remove volatile open trades
+  stateCopy.openTrades = [];
+
+  try {
+    localStorage.setItem("PropForge", JSON.stringify(stateCopy));
+  } catch (err) {
+    console.error("Failed to save state:", err);
+  }
+}
+function loadStateFromLocalStorage() {
+  const stored = localStorage.getItem("PropForge");
+  if (stored) {
+    try {
+      const parsed = JSON.parse(stored);
+
+      // Restore safely
+      Object.assign(Core.state, parsed);
+    } catch (err) {
+      console.error("Failed to load state:", err);
+    }
+  }
+}
+
+// Button for lot size
 function adjustLotSize(delta) {
   const config = Phases[Core.state.phase];
   const newSize = Core.state.lotSize + delta;
@@ -1213,6 +1285,7 @@ document.getElementById("close").addEventListener("click", () => {
 
     state.marginUsed -= trade.marginRequired;
     state.balance += pnl;
+    saveStateToLocalStorage();
   });
 
   state.openTrades = [];
@@ -1325,6 +1398,22 @@ document.querySelectorAll('button[data-open="performance"]').forEach(btn => {
             </div>
           `).join('')}
         </div>
+
+        <div class="grid grid-cols-2 gap-3 mt-4 text-sm">
+          <button id="importBackupBtn" class="bg-green-600 text-white text-sm px-4 py-2 rounded-md text-center cursor-pointer w-full sm:w-auto border-0">
+            <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5"></path>
+            </svg>
+            Import Backup (.json)
+          </button>
+          <button id="exportBackupBtn" class="bg-blue-600 text-white text-sm px-4 py-2 rounded-md text-center cursor-pointer w-full sm:w-auto border-0">
+            <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5"></path>
+            </svg>
+            Export Backup (.json)
+          </button>
+        </div>
+        <input type="file" id="importBackupInput" accept=".json" class="hidden" />
       </div>
     `;
 
@@ -1333,12 +1422,66 @@ document.querySelectorAll('button[data-open="performance"]').forEach(btn => {
       content,
       ConfirmLabel: "Reset",
       CloseLabel: "Cancel",
+      onLoad: () => {
+        setTimeout(() => {
+          const exportBtn = document.getElementById("exportBackupBtn");
+          const importBtn = document.getElementById("importBackupBtn");
+          const importInput = document.getElementById("importBackupInput");
+          
+          importBtn.addEventListener("click", () => {
+            importInput.click(); // ← Triggers the file picker
+          });
+        
+          exportBtn.addEventListener("click", () => {
+            const stateCopy = { ...Core.state, openTrades: [] };
+            const dataStr = JSON.stringify(stateCopy, null, 2);
+            const blob = new Blob([dataStr], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `trading-backup-${new Date().toISOString().split("T")[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+          });
+        
+          importInput.addEventListener("change", (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+        
+            const reader = new FileReader();
+            reader.onload = (event) => {
+              try {
+                const imported = JSON.parse(event.target.result);
+                if (!imported || typeof imported !== "object" || !imported.trades || !imported.challenge) {
+                  alert("Invalid backup file.");
+                  return;
+                }
+        
+                Object.assign(Core.state, imported);
+                Core.state.openTrades = [];
+                saveStateToLocalStorage();
+        
+                Stats.update(Core.state);
+                Chart.draw(Core.state);
+
+                location.reload(true);
+              } catch (err) {
+                alert("❌ Failed to import backup.");
+              }
+            };
+        
+            reader.readAsText(file);
+          });
+        }, 50); // slight delay to ensure DOM is mounted
+
+      },
       onConfirm: () => Core.resetPhase()
     });
   };
 });
 
 window.addEventListener('DOMContentLoaded', () => {
+  loadStateFromLocalStorage();
   document.getElementById("lotDecrease").addEventListener("click", () => adjustLotSize(-1));
   document.getElementById("lotIncrease").addEventListener("click", () => adjustLotSize(1));
   
