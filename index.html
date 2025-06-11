@@ -38,7 +38,7 @@ Ideal for Topstep-style challenge prep, journaling mental reps, or simply sharpe
     <link rel="shortcut icon" type="image/x-icon" href="imgs/logo.svg">
     <link rel="icon" type="image/svg+xml" href="imgs/logo.svg" />
     <link rel="apple-touch-icon" href="imgs/logo.svg">
-    <link rel="stylesheet" href="src/style.css">
+    <link rel="stylesheet" href="dist/bundle.css">
   </head>
   <body>
     <div class="container p-4 flex flex-col gap-6">
@@ -410,7 +410,29 @@ Ideal for Topstep-style challenge prep, journaling mental reps, or simply sharpe
       </div>
     </div>
 
-    <script src="libraries/tailwind-mod-noreset.min.js"></script>
-    <script src="src/script.js" type="module"></script>
+    <script src="dist/script.js" type="module"></script>
+    <script src="https://storage.googleapis.com/workbox-cdn/releases/6.4.1/workbox-sw.js"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('./sw.js').then(reg => {
+          reg.addEventListener('updatefound', () => {
+            const newSW = reg.installing;
+            newSW.addEventListener('statechange', () => {
+              if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
+                // Notify the user and reload if they confirm
+                if (confirm('A new version is available. Reload now?')) {
+                  window.location.reload();
+                }
+              }
+            });
+          });
+        });
+
+        // Ensure immediate activation of a new service worker
+        navigator.serviceWorker.ready.then(registration => {
+          registration.active.postMessage({ type: 'SKIP_WAITING' });
+        });
+      }
+    </script>
   </body>
 </html>
