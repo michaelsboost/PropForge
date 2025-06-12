@@ -1389,7 +1389,6 @@ document.querySelectorAll('button[data-open="performance"]').forEach(btn => {
 
     const content = `
       <div class="trading-card rounded-xl p-5">
-        <h2 class="font-bold text-lg mb-4">📈 Performance Card</h2>
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 text-sm text-slate-300">
           ${stats.map(stat => `
             <div>
