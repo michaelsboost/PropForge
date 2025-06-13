@@ -3,7 +3,6 @@
   
 @tailwind components;
 @tailwind utilities;
-
 /* Custom hybrid styles */ 
 :root {
   --bg-dark: #14152f;
@@ -55,6 +54,7 @@ body {
   height: 400px;
   width: 100%;
 }
+
 /* Trade type indicators */
 .trade-type-buy {
   color: var(--green);

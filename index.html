@@ -4,15 +4,7 @@
     <title>PropForge – Offline Prop Firm Trading Simulator</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, interactive-widget=resizes-content">
-    <meta name="description" content="PropForge: A Realistic Prop Firm Simulator for Index Futures
-
-PropForge is a browser-based, fully offline training simulator for serious traders.
-
-Trade MNQ/NQ using realistic bracket orders, strict margin logic, and stat tracking. Observe transparent rule-based bots in Spectator Mode — no signals, no AI.
-
-Designed to train discipline, strategy, and self-reliance.
-
-Ideal for Topstep-style challenge prep, journaling mental reps, or simply sharpening your edge without dopamine loops or fake resets.">
+    <meta name="description" content="PropForge is an offline, browser-based prop firm simulator for MNQ/NQ with rule-based bots and bracket orders. Train discipline and strategy.">
     <meta name="author" content="Michael Schwartz">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="application-name" content="PropForge – Offline Prop Firm Trading Simulator">
@@ -25,15 +17,7 @@ Ideal for Topstep-style challenge prep, journaling mental reps, or simply sharpe
     <meta property="og:url" content="https://michaelsboost.com/PropForge" />
     <meta property="og:type" content="website" />
     <meta property="og:title" content="PropForge – Offline Prop Firm Trading Simulator" />
-    <meta property="og:description" content="PropForge: A Realistic Prop Firm Simulator for Index Futures
-
-PropForge is a browser-based, fully offline training simulator for serious traders.
-
-Trade MNQ/NQ using realistic bracket orders, strict margin logic, and stat tracking. Observe transparent rule-based bots in Spectator Mode — no signals, no AI.
-
-Designed to train discipline, strategy, and self-reliance.
-
-Ideal for Topstep-style challenge prep, journaling mental reps, or simply sharpening your edge without dopamine loops or fake resets." />
+    <meta property="og:description" content="PropForge is an offline, browser-based prop firm simulator for MNQ/NQ with rule-based bots and bracket orders. Train discipline and strategy." />
     <link rel="manifest" href="manifest.json">
     <link rel="shortcut icon" type="image/x-icon" href="imgs/logo.svg">
     <link rel="icon" type="image/svg+xml" href="imgs/logo.svg" />
@@ -386,9 +370,9 @@ Ideal for Topstep-style challenge prep, journaling mental reps, or simply sharpe
           </div>
         </div>
         
-        <div class="overflow-x-auto">
+        <div class="overflow-x-auto max-h-96 overflow-y-auto">
           <table id="history" class="w-full text-sm">
-            <thead>
+            <thead class="sticky inset-x-0 top-0">
               <tr class="text-left border-b border-slate-700">
                 <th class="pb-2 text-slate-400">Time</th>
                 <th class="pb-2 text-slate-400">Type</th>
@@ -411,7 +395,7 @@ Ideal for Topstep-style challenge prep, journaling mental reps, or simply sharpe
     </div>
 
     <script src="dist/script.js" type="module"></script>
-    <script src="https://storage.googleapis.com/workbox-cdn/releases/6.4.1/workbox-sw.js"></script>
+    <!-- <script src="https://storage.googleapis.com/workbox-cdn/releases/6.4.1/workbox-sw.js"></script>
     <script>
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('./sw.js').then(reg => {
@@ -433,6 +417,6 @@ Ideal for Topstep-style challenge prep, journaling mental reps, or simply sharpe
           registration.active.postMessage({ type: 'SKIP_WAITING' });
         });
       }
-    </script>
+    </script> -->
   </body>
 </html>
