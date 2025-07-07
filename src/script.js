@@ -158,6 +158,7 @@ const Core = (() => {
     todayPNL: 0,
     justAdvanced: false,
     isFullyTrained: false,
+    save: true,
     challenge: {
       phase: 1,
       level: '25K',
@@ -255,6 +256,7 @@ const Core = (() => {
   }
 
   function resetPhase() {
+    state.save = false;
     const config = Phases[state.phase];
     state.balance = config.startBalance;
     state.marginUsed = 0;
@@ -262,6 +264,7 @@ const Core = (() => {
     state.openTrades = [];
     state.todayPNL = 0;
     clearStorage();
+    state.save = true;
   }
 
   function showPhaseCompleteNotification(challenge) {
@@ -797,6 +800,7 @@ const Trades = (() => {
   
     state.openTrades.push(trade);
     state.marginUsed += requiredMargin;
+    saveStateToLocalStorage();
     showTradeMessage(`✅ Placed ${type} (Free Mode)`);
   }
 
@@ -978,6 +982,7 @@ const Trades = (() => {
 
       return true;
     });
+    saveStateToLocalStorage();
   }
 
   return { place, evaluate };
@@ -1128,11 +1133,8 @@ const Stats = (() => {
 function saveStateToLocalStorage() {
   const stateCopy = { ...Core.state };
 
-  // Remove volatile open trades
-  stateCopy.openTrades = [];
-
   try {
-    localStorage.setItem("PropForge", JSON.stringify(stateCopy));
+    if (Core.state.save) localStorage.setItem("PropForge", JSON.stringify(stateCopy));
   } catch (err) {
     console.error("Failed to save state:", err);
   }
@@ -1142,9 +1144,12 @@ function loadStateFromLocalStorage() {
   if (stored) {
     try {
       const parsed = JSON.parse(stored);
-
-      // Restore safely
       Object.assign(Core.state, parsed);
+
+      // ⏱️ Evaluate trades immediately to prevent refresh-exploit
+      Trades.evaluate(Core.state);
+      Stats.update(Core.state);
+      Chart.draw(Core.state);
     } catch (err) {
       console.error("Failed to load state:", err);
     }
@@ -1165,8 +1170,8 @@ function adjustLotSize(delta) {
     return;
   }
 
-  if (newSize > config.maxLots) {
-    alert(`❌ Lot size can't exceed max allowed: ${config.maxLots}`);
+  if (newSize > Core.getMaxLotsAllowed()) {
+    alert(`❌ Lot size can't exceed max allowed: ${Core.getMaxLotsAllowed()}`);
     return;
   }
 
@@ -1192,21 +1197,43 @@ document.querySelectorAll('input[name="contract"]').forEach(radio => {
       return;
     }
     
+    const prevContract = Core.state.contract;
+    const prevLotSize = Core.state.lotSize;
     Core.state.contract = newContract;
+
+    // === Adjust lot size on contract change ===
+    let newLotSize = prevLotSize;
+
+    if (prevContract === "micro" && newContract === "mini") {
+      newLotSize = Math.max(1, Math.floor(prevLotSize / 10));
+    } else if (prevContract === "mini" && newContract === "micro") {
+      newLotSize = prevLotSize * 10;
+    }
+
+    // Clamp to max allowed lot size
+    const maxAllowed = Core.getMaxLotsAllowed();
+    if (newLotSize > maxAllowed) newLotSize = maxAllowed;
+
+    Core.state.lotSize = newLotSize;
+    document.getElementById("lotSizeDisplay").textContent = newLotSize;
+
+    // Sync radio buttons
+    document.querySelectorAll('input[name="lot"]').forEach(radio => {
+      radio.checked = parseInt(radio.value) === newLotSize;
+    });
   });
 });
 document.querySelectorAll('input[name="lot"]').forEach(radio => {
   radio.addEventListener('change', () => {
     const selected = parseInt(radio.value);
-    const maxAllowed = Phases[Core.state.phase].maxLots;
 
-    if (selected > maxAllowed) {
+    if (selected > Core.getMaxLotsAllowed()) {
       // Revert the change and notify the user
       radio.checked = false;
-      alert(`❌ Max allowed lot size: ${maxAllowed}`);
+      alert(`❌ Max allowed lot size: ${Core.getMaxLotsAllowed()}`);
       
       // Optionally reset to a valid value (like 1)
-      Core.state.lotSize = Math.min(Core.state.lotSize, maxAllowed);
+      Core.state.lotSize = Math.min(Core.state.lotSize, Core.getMaxLotsAllowed());
       document.getElementById("lotSizeDisplay").textContent = Core.state.lotSize;
 
       // Uncheck all radios
@@ -1224,15 +1251,15 @@ document.querySelectorAll('input[name="lot"]').forEach(radio => {
   });
 });
 
-document.getElementById("stopLossAmount").addEventListener('input', (e) => {
+document.getElementById("stopLossAmount").addEventListener('input', e => {
   Core.state.stopLoss = parseFloat(e.target.value);
 });
-document.getElementById("takeProfitAmount").addEventListener('input', (e) => {
+document.getElementById("takeProfitAmount").addEventListener('input', e => {
   Core.state.takeProfit = parseFloat(e.target.value);
 });
 document.addEventListener("keydown", e => {
-  if (e.key === "[" || e.key === "{") adjustLotSize(1);
-  if (e.key === "]" || e.key === "}") adjustLotSize(-1);
+  if (e.key === "[" || e.key === "{") adjustLotSize(-1);
+  if (e.key === "]" || e.key === "}") adjustLotSize(1);
   if (e.key.toLowerCase() === "b") Trades.place("buy", Core.state);
   if (e.key.toLowerCase() === "s") Trades.place("sell", Core.state);
   if (e.key.toLowerCase() === "x") document.getElementById("close").click();
