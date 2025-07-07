@@ -1230,14 +1230,12 @@ document.getElementById("stopLossAmount").addEventListener('input', (e) => {
 document.getElementById("takeProfitAmount").addEventListener('input', (e) => {
   Core.state.takeProfit = parseFloat(e.target.value);
 });
-document.addEventListener("keydown", (e) => {
-  if (e.key === "+" || e.key === "=") adjustLotSize(1);
-  if (e.key === "-" || e.key === "_") adjustLotSize(-1);
+document.addEventListener("keydown", e => {
+  if (e.key === "[" || e.key === "{") adjustLotSize(1);
+  if (e.key === "]" || e.key === "}") adjustLotSize(-1);
   if (e.key.toLowerCase() === "b") Trades.place("buy", Core.state);
   if (e.key.toLowerCase() === "s") Trades.place("sell", Core.state);
-  if (e.key.toLowerCase() === "x") {
-    document.getElementById("close").click();
-  }
+  if (e.key.toLowerCase() === "x") document.getElementById("close").click();
 
   // hotkey for pass / fail test
   // if (e.shiftKey && e.key.toLowerCase() === "h") {
